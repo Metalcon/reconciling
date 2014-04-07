@@ -3,7 +3,10 @@ package freebaseclient;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -25,28 +28,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 
 public class LastFMApi {
 
-	public static Properties properties = new Properties();
-
-	public static void main(String[] args) throws FileNotFoundException,
-			IOException, ParseException {
-		String query = "ironmaiden";
-		List<LastFMEventMetaData> eventContainer = new ArrayList<LastFMEventMetaData>();
-		lastFmApiEventCall(query, eventContainer, 30, 0);
-		System.out.println(eventContainer.get(0).getEventId());
-		System.out.println(eventContainer.get(0).getArtists());
-		System.out.println(eventContainer.get(1).getEventId());
-		System.out.println(eventContainer.get(1).getArtists());
-		System.out.println(eventContainer.get(0).getVenue().getCity());
-		System.out.println(eventContainer.get(1).getVenue().getCity());
-		System.out.println("street: "
-				+ eventContainer.get(0).getVenue().getStreet());
-		System.out.println("street: "
-				+ eventContainer.get(1).getVenue().getStreet());
-		System.out.println("startdate " + eventContainer.get(0).getStartDate());
-		System.out.println("startdate " + eventContainer.get(1).getStartDate());
-		System.out.println("enddate " + eventContainer.get(0).getEndDate());
-		System.out.println("enddate " + eventContainer.get(0).getEndDate());
-	}
+	public Properties properties = new Properties();
 
 	/**
 	 * 
@@ -67,13 +49,18 @@ public class LastFMApi {
 	 *             retrieve between one and fifty results at the same time.
 	 */
 
-	public static void lastFmApiEventCall(String bandName,
-			List<LastFMEventMetaData> container, int maxResults,
-			int festivalsOnly) throws IOException, ParseException {
-		properties.load(new FileInputStream("lastfm.properties"));
-		HttpTransport httpTransport = new NetHttpTransport();
-		HttpRequestFactory requestFactory = httpTransport
-				.createRequestFactory();
+	public List<LastFMEventMetaData> lastFmApiEventCall(String bandName,
+			int maxResults, int festivalsOnly) {
+		try {
+			properties.load(new FileInputStream("lastfm.properties"));
+		} catch (FileNotFoundException e) {
+			System.out
+					.println("you need a file freebase.properties. look in your git for freebase.properties.sample and rename it");
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		GenericUrl url = new GenericUrl("http://ws.audioscrobbler.com/2.0/");
 		url.put("method", "artist.getevents");
 		url.put("artist", bandName);
@@ -82,13 +69,36 @@ public class LastFMApi {
 		url.put("autocorrect", "1");
 		url.put("festivalsonly", festivalsOnly);
 		url.put("api_key", properties.get("API_KEY"));
+		JSONObject response = makeHttpRequest(url);
 		System.out.println(url);
-		HttpRequest request = requestFactory.buildGetRequest(url);
-		HttpResponse httpResponse = request.execute();
-		JSONParser parser = new JSONParser();
-		JSONObject response = (JSONObject) parser.parse(httpResponse
-				.parseAsString());
-		processingSearchResults(response, container);
+		return processingSearchResults(response);
+	}
+
+	/**
+	 * helper function to make an http request to lastFM
+	 * 
+	 * @param url
+	 * @return
+	 */
+
+	private JSONObject makeHttpRequest(GenericUrl url) {
+		HttpTransport httpTransport = new NetHttpTransport();
+		HttpRequestFactory requestFactory = httpTransport
+				.createRequestFactory();
+		HttpRequest request;
+		try {
+			request = requestFactory.buildGetRequest(url);
+			HttpResponse httpResponse = request.execute();
+			JSONParser parser = new JSONParser();
+			return (JSONObject) parser.parse(httpResponse.parseAsString());
+
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		} catch (ParseException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	/**
@@ -112,10 +122,10 @@ public class LastFMApi {
 	// has a different structure(results are missing a Array and is instead a
 	// single JSONObject)
 
-	private static void processingSearchResults(JSONObject response,
-			List<LastFMEventMetaData> container) {
+	private List<LastFMEventMetaData> processingSearchResults(
+			JSONObject response) {
 		JSONObject responseEvents = (JSONObject) response.get("events");
-		System.out.println(responseEvents);
+		List<LastFMEventMetaData> container = new ArrayList<LastFMEventMetaData>();
 		JSONArray responseEventsEvent = (JSONArray) responseEvents.get("event");
 		for (int i = 0; i < responseEventsEvent.size(); i++) {
 			LastFMEventMetaData temp = new LastFMEventMetaData();
@@ -127,6 +137,11 @@ public class LastFMApi {
 			if (testsIfFilled(responseEventEntry, "id")) {
 				temp.setEventId(Integer.parseInt(responseEventEntry.get("id")
 						.toString()));
+			}
+
+			// fills the title field
+			if (testsIfFilled(responseEventEntry, "title")) {
+				temp.setTitle(responseEventEntry.get("title").toString());
 			}
 
 			// fills the field Artists
@@ -177,12 +192,17 @@ public class LastFMApi {
 				geoTemp.setGeoLat(Double
 						.parseDouble(responseEventEntryVenueLocationGeo.get(
 								"geo:lat").toString()));
+			} else {
+				geoTemp.setGeoLat(null);
 			}
 			if (testsIfFilled(responseEventEntryVenueLocationGeo, "geo:long")) {
 				geoTemp.setGeoLong(Double
 						.parseDouble(responseEventEntryVenueLocationGeo.get(
 								"geo:long").toString()));
+			} else {
+				geoTemp.setGeoLong(null);
 			}
+			venueTemp.setGeoLocation(geoTemp);
 
 			// fills the city field
 			if (testsIfFilled(responseEventEntryVenueLocation, "city")) {
@@ -213,16 +233,39 @@ public class LastFMApi {
 
 			// fills the startDate field
 			if (testsIfFilled(responseEventEntry, "startDate")) {
-				temp.setStartDate(responseEventEntry.get("startDate")
-						.toString());
+				String tempFormatDate = responseEventEntry.get("startDate")
+						.toString();
+				DateFormat formatter = new SimpleDateFormat(
+						"EEE', 'dd MMM yyyy HH:mm:ss");
+				Date date = null;
+				try {
+					date = formatter.parse(tempFormatDate);
+				} catch (java.text.ParseException e) {
+					e.printStackTrace();
+					return null;
+				}
+				temp.setStartDate(date);
 			}
 
 			// fills the endDate
 			if (responseEventEntry.containsKey("endDate")) {
-				temp.setEndDate(responseEventEntry.get("endDate").toString());
+				String tempFormatDate = responseEventEntry.get("endDate")
+						.toString();
+				DateFormat formatter = new SimpleDateFormat(
+						"EEE', 'dd MMM yyyy HH:mm:ss");
+				Date date = null;
+				try {
+					date = formatter.parse(tempFormatDate);
+				} catch (java.text.ParseException e) {
+					e.printStackTrace();
+					return null;
+				}
+				temp.setStartDate(date);
 			}
 			container.add(temp);
 		}
+		return container;
+
 	}
 
 	/**
@@ -237,7 +280,7 @@ public class LastFMApi {
 	 *         JSONField contains a string, false if it is empty
 	 */
 
-	private static boolean testsIfFilled(JSONObject jsonTemp, String type) {
+	private boolean testsIfFilled(JSONObject jsonTemp, String type) {
 		if (jsonTemp.get(type).equals("")) {
 			return false;
 		}

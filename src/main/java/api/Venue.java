@@ -75,4 +75,14 @@ public class Venue {
 		this.venueWebsite = venueWebsite;
 	}
 
+	public String toString() {
+		String response = "";
+		response = "Venue-ID: " + venueId + "\n" + "Venue-Name: " + venueName
+				+ "\n" + "Location:\n" + geoLocation.toString() + "City: "
+				+ city + "\n" + "Country: " + country + "\n" + "Street: "
+				+ street + "\n" + "Postalcode: " + postalCode + "\n" + "Url: "
+				+ venueWebsite;
+		return response;
+	}
+
 }

@@ -2,23 +2,30 @@ package api;
 
 public class GeoLocation {
 
-	private double geoLat;
-	private double geoLong;
+	private Double geoLat;
+	private Double geoLong;
 
-	public double getGeoLat() {
+	public Double getGeoLat() {
 		return geoLat;
 	}
 
-	public void setGeoLat(double geoLat) {
+	public void setGeoLat(Double geoLat) {
 		this.geoLat = geoLat;
 	}
 
-	public double getGeoLong() {
+	public Double getGeoLong() {
 		return geoLong;
 	}
 
-	public void setGeoLong(double geoLong) {
+	public void setGeoLong(Double geoLong) {
 		this.geoLong = geoLong;
+	}
+
+	public String toString() {
+		String response = "";
+		response = "Latitude: " + geoLat + "\n" + "Longitude: " + geoLong
+				+ "\n";
+		return response;
 	}
 
 }
