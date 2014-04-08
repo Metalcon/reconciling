@@ -6,12 +6,6 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<repositories>
 		<repository>
-			<id>jsonrpc4j-webdav-maven-repo</id>
-			<name>jsonrpc4j maven repository</name>
-			<url>http://jsonrpc4j.googlecode.com/svn/maven/repo/</url>
-			<layout>default</layout>
-		</repository>
-		<repository>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
@@ -40,11 +34,6 @@
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
 			<version>2.3</version>
-		</dependency>
-		<dependency>
-			<groupId>com.flickr4java</groupId>
-			<artifactId>flickr</artifactId>
-			<version>2.5</version>
 		</dependency>
 	</dependencies>
 </project>
