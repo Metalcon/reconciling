@@ -47,11 +47,64 @@ public class LastFMApi {
 	 *         This method can look up events for one specific band. It can
 	 *         retrieve between one and fifty results at the same time. It
 	 *         returns the looked up events as an ArrayList containing the
-	 *         filled LastFMEventMetaData objects
+	 *         filled LastFMEventMetaData objects. Example request would look
+	 *         like: lastFmApiEventCall("iron maiden", 10, 1). This request
+	 *         looks for events for iron maiden, returns 10 results if available
+	 *         and ignores all events that are no festivals
 	 */
 
-	public List<LastFMEventMetaData> lastFmApiEventCall(String bandName,
+	public List<LastFMEventMetaData> lastFmApiBandnameEventCall(
+			String bandName, int maxResults, int festivalsOnly) {
+		GenericUrl url = createUrl(maxResults, festivalsOnly);
+		url.put("artist", bandName);
+		JSONObject response = makeHttpRequest(url);
+		System.out.println(url);
+		return processingSearchResults(response);
+	}
+
+	/**
+	 * 
+	 * @param mbid
+	 *            is a unique musicbrainz id for the band you want to get the
+	 *            events for
+	 * @param maxResults
+	 *            Defines the number of results you want to get (1-50)
+	 * @param festivalsOnly
+	 *            Can select to show only festivals (1 for only Festivals, 0 for
+	 *            all events)
+	 * @throws IOException
+	 * @throws ParseException
+	 * @return Returns a container from the type ArrayList<LastFMEventMetaData>
+	 *         containing the informations to the events for the requested band
+	 * 
+	 *         This method can look up events for one specific band with its
+	 *         musicbrainz id. It can retrieve between one and fifty results at
+	 *         the same time. It returns the looked up events as an ArrayList
+	 *         containing the filled LastFMEventMetaData objects. Example
+	 *         request would look like: lastFmApiEventCall("iron maiden", 10,
+	 *         1). This request looks for events for iron maiden, returns 10
+	 *         results if available and ignores all events that are no festivals
+	 */
+
+	public List<LastFMEventMetaData> lastFMApiMbidEventCall(String mbid,
 			int maxResults, int festivalsOnly) {
+		GenericUrl url = createUrl(maxResults, festivalsOnly);
+		url.put("mbid", mbid);
+		JSONObject response = makeHttpRequest(url);
+		System.out.println(url);
+		return processingSearchResults(response);
+	}
+
+	/**
+	 * 
+	 * @param maxResults
+	 * @param festivalsOnly
+	 * @return from type GenericUrl, containing the url that was put together
+	 * 
+	 *         Helper method for the eventCalls, that produces the url needed
+	 *         for the call
+	 */
+	private GenericUrl createUrl(int maxResults, int festivalsOnly) {
 		try {
 			properties.load(new FileInputStream("lastfm.properties"));
 		} catch (FileNotFoundException e) {
@@ -63,15 +116,12 @@ public class LastFMApi {
 		}
 		GenericUrl url = new GenericUrl("http://ws.audioscrobbler.com/2.0/");
 		url.put("method", "artist.getevents");
-		url.put("artist", bandName);
 		url.put("format", "json");
 		url.put("limit", maxResults);
 		url.put("autocorrect", "1");
 		url.put("festivalsonly", festivalsOnly);
 		url.put("api_key", properties.get("API_KEY"));
-		JSONObject response = makeHttpRequest(url);
-		System.out.println(url);
-		return processingSearchResults(response);
+		return url;
 	}
 
 	/**
@@ -181,6 +231,11 @@ public class LastFMApi {
 			temp.setTitle(responseEventEntry.get("title").toString());
 		}
 
+		// fills the website field
+		if (testsIfFilled(responseEventEntry, "website")) {
+			temp.setEventWebsite(responseEventEntry.get("website").toString());
+		}
+
 		// fills the field Artists
 		JSONObject responseEventsEventArtists = (JSONObject) responseEventEntry
 				.get("artists");
@@ -193,14 +248,40 @@ public class LastFMApi {
 					tempArtistList.add(responseEventsEventArtistsArtist.get(j)
 							.toString());
 				}
-				temp.setArtists(tempArtistList);
 			}
-		} else {
-			if (testsIfFilled(responseEventEntry, "artists"))
-				tempArtistList
-						.add(responseEventEntry.get("artists").toString());
-			temp.setArtists(tempArtistList);
+		} else if (testsIfFilled(responseEventEntry, "artists")
+				&& !responseEventsEventArtists.containsKey("headliner")) {
+			tempArtistList.add(responseEventEntry.get("artists").toString());
+		} else if (testsIfFilled(responseEventEntry, "artists")) {
+			tempArtistList.add(responseEventsEventArtists.get("artist")
+					.toString());
 		}
+		temp.setArtists(tempArtistList);
+		temp.setHeadliner(responseEventsEventArtists.get("headliner")
+				.toString());
+
+		// fills the tags field
+		List<String> tempTagsList = new ArrayList<String>();
+		if (responseEventEntry.containsKey("tags")) {
+			JSONObject responseEventsEventTags = (JSONObject) responseEventEntry
+					.get("tags");
+			typeTest = responseEventsEventTags.get("tag");
+			if (typeTest instanceof JSONArray) {
+				JSONArray responseEventsEventTagsTag = (JSONArray) typeTest;
+				if (!responseEventsEventTagsTag.isEmpty()) {
+					for (int j = 0; j < responseEventsEventTagsTag.size(); j++) {
+						tempTagsList.add(responseEventsEventTagsTag.get(j)
+								.toString());
+					}
+				}
+			} else if (testsIfFilled(responseEventsEventTags, "tag")) {
+				tempTagsList.add(responseEventsEventTags.get("tag").toString());
+			}
+
+		} else if (responseEventEntry.containsKey("tag")) {
+			tempTagsList.add(responseEventEntry.get("tag").toString());
+		}
+		temp.setTags(tempTagsList);
 
 		// fills the field venue
 		JSONObject responseEventEntryVenue = (JSONObject) responseEventEntry
@@ -216,6 +297,7 @@ public class LastFMApi {
 			venueTemp.setVenueName(responseEventEntryVenue.get("name")
 					.toString());
 		}
+
 		JSONObject responseEventEntryVenueLocation = (JSONObject) responseEventEntryVenue
 				.get("location");
 		JSONObject responseEventEntryVenueLocationGeo = (JSONObject) responseEventEntryVenueLocation
@@ -262,8 +344,8 @@ public class LastFMApi {
 					"postalcode").toString());
 		}
 		// fills the website field
-		if (testsIfFilled(responseEventEntryVenue, "url")) {
-			venueTemp.setVenueWebsite(responseEventEntryVenue.get("url")
+		if (testsIfFilled(responseEventEntryVenue, "website")) {
+			venueTemp.setVenueWebsite(responseEventEntryVenue.get("website")
 					.toString());
 		}
 		temp.setVenue(venueTemp);

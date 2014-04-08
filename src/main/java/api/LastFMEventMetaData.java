@@ -12,6 +12,9 @@ public class LastFMEventMetaData {
 	private int eventId;
 	private String title;
 	private List<String> artists;
+	private String headliner;
+	private String eventWebsite;
+	private List<String> tags;
 
 	// isFestival()
 	public String getArtist() {
@@ -78,12 +81,39 @@ public class LastFMEventMetaData {
 		this.title = title;
 	}
 
+	public String getHeadliner() {
+		return headliner;
+	}
+
+	public void setHeadliner(String headliner) {
+		this.headliner = headliner;
+	}
+
+	public String getEventWebsite() {
+		return eventWebsite;
+	}
+
+	public void setEventWebsite(String eventWebsite) {
+		this.eventWebsite = eventWebsite;
+	}
+
+	public List<String> getTags() {
+		return tags;
+	}
+
+	public void setTags(List<String> tags) {
+		this.tags = tags;
+	}
+
 	public String toString() {
 		String response = "------------------------\n";
-		response += "Event-ID: " + getEventId() + "\n" + "Event-Title: "
-				+ getTitle() + "\n" + "Artists: " + getArtists() + "\n"
-				+ "Start-Date: " + startDate + "\n" + "End-Date: " + endDate
-				+ "\n" + "Venue-Informations: \n" + venue.toString() + "\n";
+		response += "Event-ID: " + eventId + "\n" + "Event-Title: " + title
+				+ "\n" + "Artists: " + artists + "\n" + "Headliner: "
+				+ headliner + "\n" + "Start-Date: " + startDate + "\n"
+				+ "End-Date: " + endDate + "\n" + "Event-Website: "
+				+ eventWebsite + "\n" + "Tags: " + tags + "\n"
+				+ "Venue-Informations: \n" + venue.toString() + "\n";
 		return response;
 	}
+
 }
