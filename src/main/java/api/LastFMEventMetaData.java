@@ -1,14 +1,16 @@
 package api;
 
+import java.util.Date;
 import java.util.List;
 
 public class LastFMEventMetaData {
 
 	private String artist;
 	private Venue venue;
-	private String startDate;
-	private String endDate;
+	private Date startDate;
+	private Date endDate;
 	private int eventId;
+	private String title;
 	private List<String> artists;
 
 	// isFestival()
@@ -28,19 +30,19 @@ public class LastFMEventMetaData {
 		this.venue = venue;
 	}
 
-	public String getStartDate() {
+	public Date getStartDate() {
 		return startDate;
 	}
 
-	public void setStartDate(String startDate) {
+	public void setStartDate(Date startDate) {
 		this.startDate = startDate;
 	}
 
-	public String getEndDate() {
+	public Date getEndDate() {
 		return endDate;
 	}
 
-	public void setEndDate(String endDate) {
+	public void setEndDate(Date endDate) {
 		this.endDate = endDate;
 	}
 
@@ -66,5 +68,22 @@ public class LastFMEventMetaData {
 		} else {
 			return true;
 		}
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public String toString() {
+		String response = "------------------------\n";
+		response += "Event-ID: " + getEventId() + "\n" + "Event-Title: "
+				+ getTitle() + "\n" + "Artists: " + getArtists() + "\n"
+				+ "Start-Date: " + startDate + "\n" + "End-Date: " + endDate
+				+ "\n" + "Venue-Informations: \n" + venue.toString() + "\n";
+		return response;
 	}
 }
