@@ -11,13 +11,14 @@ import api.LastFMEventMetaData;
 public class LastFMTest {
 
 	public static void main(String[] args) throws IOException, ParseException {
-		String query = "ironmaiden";
+		String query = "iron maiden";
 		LastFMApi lastFMApi = new LastFMApi();
 
 		List<LastFMEventMetaData> eventContainer = new ArrayList<LastFMEventMetaData>();
-		eventContainer = lastFMApi.lastFmApiEventCall(query, 2, 0);
-
-		System.out.println(eventContainer.get(0).toString());
-		System.out.println(eventContainer.get(1).toString());
+		eventContainer = lastFMApi.lastFmApiEventCall(query, 10, 1);
+		for (int i = 0; i < eventContainer.size(); i++) {
+			System.out.println("Element " + (i + 1));
+			System.out.println(eventContainer.get(i).toString());
+		}
 	}
 }
