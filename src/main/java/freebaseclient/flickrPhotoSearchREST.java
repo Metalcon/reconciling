@@ -16,6 +16,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -37,7 +40,8 @@ public class flickrPhotoSearchREST {
 			"https://api.flickr.com/services/rest/");
 
 	public static void main(String[] args) throws IOException,
-			ParserConfigurationException, SAXException, ParseException {
+			ParserConfigurationException, SAXException, ParseException,
+			org.json.simple.parser.ParseException {
 		try {
 			properties.load(new FileInputStream("flickr.properties"));
 		} catch (FileNotFoundException fnfe) {
@@ -89,7 +93,7 @@ public class flickrPhotoSearchREST {
 	private static List<String> getEventPhotos(String placeId,
 			String eventName, long minTakenDate, long maxTakenDate,
 			String licenses) throws IOException, ParserConfigurationException,
-			SAXException {
+			SAXException, org.json.simple.parser.ParseException {
 
 		HttpTransport httpTransport = new NetHttpTransport();
 		HttpRequestFactory requestFactory = httpTransport
@@ -103,6 +107,8 @@ public class flickrPhotoSearchREST {
 		url.put("license", licenses);
 		url.put("min_taken_date", minTakenDate);
 		url.put("min_taken_date", maxTakenDate);
+		url.put("format", "json");
+		System.out.println(url);
 		HttpRequest request = requestFactory.buildGetRequest(url);
 		HttpResponse response = request.execute();
 		List<String> photoIds = new ArrayList<String>();
@@ -151,7 +157,7 @@ public class flickrPhotoSearchREST {
 
 	private static List<String> getPhotosFromPlace(String placeId,
 			String licenses) throws IOException, ParserConfigurationException,
-			SAXException {
+			SAXException, org.json.simple.parser.ParseException {
 
 		HttpTransport httpTransport = new NetHttpTransport();
 		HttpRequestFactory requestFactory = httpTransport
@@ -162,6 +168,7 @@ public class flickrPhotoSearchREST {
 		url.put("place_id", placeId);
 		url.put("extras", "url_o");
 		url.put("license", licenses);
+		url.put("format", "json");
 		HttpRequest request = requestFactory.buildGetRequest(url);
 		HttpResponse response = request.execute();
 		List<String> photoIds = new ArrayList<String>();
@@ -169,24 +176,33 @@ public class flickrPhotoSearchREST {
 		return photoIds;
 	}
 
-	private static List<String> parsePhotoResponse(String xmlResponse)
-			throws ParserConfigurationException, SAXException, IOException {
+	private static List<String> parsePhotoResponse(String jsonResponse)
+			throws ParserConfigurationException, IOException,
+			org.json.simple.parser.ParseException {
 
 		List<String> tempList = new ArrayList<String>();
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		DocumentBuilder db = dbf.newDocumentBuilder();
-		InputSource is = new InputSource();
-		is.setCharacterStream(new StringReader(xmlResponse));
-		Document document = db.parse(is);
-		System.out.println(xmlResponse);
-		NodeList photos = document.getElementsByTagName("photos");
-		for (int i = 0; i < photos.getLength(); i++) {
-			Element place = (Element) photos.item(i);
-			Node title = place.getElementsByTagName("photo").item(i);
-			NamedNodeMap nnm = title.getAttributes();
-			String idTemp = nnm.getNamedItem("id").toString().split("=")[1];
-			tempList.add(idTemp);
+
+		String jsonResponseWithoutPadding = jsonResponse.substring(
+				jsonResponse.indexOf("(") + 1, jsonResponse.lastIndexOf(")"));
+		JSONObject response = new JSONObject();
+		JSONParser jsonparser = new JSONParser();
+		try {
+			response = (JSONObject) jsonparser
+					.parse(jsonResponseWithoutPadding);
+			JSONObject responsePhotos = (JSONObject) response.get("photos");
+			JSONArray photoList = (JSONArray) responsePhotos.get("photo");
+			for (int i = 0; i < photoList.size(); ++i) {
+				JSONObject photoData = (JSONObject) photoList.get(i);
+
+				tempList.add(photoData.get("url_o").toString());
+			}
+		} catch (ClassCastException ce) {
+			System.err
+					.println("Typecast failed. Response is probably broken. Can be caused by bad request");
 		}
+
+		// System.out.println(jsonResponse);
+		System.out.println(tempList);
 		return tempList;
 
 	}
