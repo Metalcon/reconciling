@@ -278,8 +278,6 @@ public class LastFMApi {
 				tempTagsList.add(responseEventsEventTags.get("tag").toString());
 			}
 
-		} else if (responseEventEntry.containsKey("tag")) {
-			tempTagsList.add(responseEventEntry.get("tag").toString());
 		}
 		temp.setTags(tempTagsList);
 
