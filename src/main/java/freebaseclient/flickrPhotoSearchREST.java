@@ -44,27 +44,52 @@ public class flickrPhotoSearchREST {
 			System.err.println("missing flickr properties");
 		}
 
+		// you can look up the license-IDs via the request
+		// flickr.photos.licenses.getInfo which get exactly the same information
+		// as stated here
+		// https://secure.flickr.com/services/api/flickr.photos.licenses.getInfo.html
+
+		// all licenses excluding "All Rights Reserved"
+		String licenseIdsWithoutAllRightsReserved = "1,2,3,4,5,6,7,8";
+
+		// same as above but without CC-NC
+		String licenseIdsUnproblematic = "4,5,6,7,8";
+
+		// only CC-NC (useful to find out if it is worth the effort to find a
+		// way to use this footage)
+		String licenseNCOnly = "1,2,3";
+
 		String place = "Wacken";
 		String placeId = getPlaceId(place);
 		System.out.println(placeId);
 		List<String> photoIds = new ArrayList<String>();
-		photoIds = getPhotosFromPlace(placeId);
+		photoIds = getPhotosFromPlace(placeId, licenseIdsUnproblematic);
 		System.out.println(photoIds);
 		DateFormat formatter = new SimpleDateFormat("dd-mm-yyyy");
 		Date minTakenDate = new Date();
 		minTakenDate = formatter.parse("05-08-2010");
 		Date maxTakenDate = new Date();
 		maxTakenDate = formatter.parse("07-08-2010");
-		List<String> eventPhotoIds = new ArrayList<String>();
+		List<String> eventPhotoIdsFree = new ArrayList<String>();
+		List<String> eventPhotoIdsWithNc = new ArrayList<String>();
+		List<String> eventPhotoIdsCCNC = new ArrayList<String>();
 		String eventName = "Wacken";
-		eventPhotoIds = getEventPhotos(placeId, eventName, minTakenDate,
-				maxTakenDate);
+
+		eventPhotoIdsWithNc = getEventPhotos(placeId, eventName,
+				minTakenDate.getTime(), maxTakenDate.getTime(),
+				licenseIdsWithoutAllRightsReserved);
+		eventPhotoIdsFree = getEventPhotos(placeId, eventName,
+				minTakenDate.getTime(), maxTakenDate.getTime(),
+				licenseIdsUnproblematic);
+		eventPhotoIdsCCNC = getEventPhotos(placeId, eventName,
+				minTakenDate.getTime(), maxTakenDate.getTime(), licenseNCOnly);
 	}
 
 	// TODO: include event dates to query!
 	private static List<String> getEventPhotos(String placeId,
-			String eventName, Date minTakenDate, Date maxTakenDate)
-			throws IOException, ParserConfigurationException, SAXException {
+			String eventName, long minTakenDate, long maxTakenDate,
+			String licenses) throws IOException, ParserConfigurationException,
+			SAXException {
 
 		HttpTransport httpTransport = new NetHttpTransport();
 		HttpRequestFactory requestFactory = httpTransport
@@ -74,10 +99,12 @@ public class flickrPhotoSearchREST {
 		url.put("method", "flickr.photos.search");
 		url.put("place_id", placeId);
 		url.put("text", eventName);
+		url.put("extras", "url_o");
+		url.put("license", licenses);
+		url.put("min_taken_date", minTakenDate);
+		url.put("min_taken_date", maxTakenDate);
 		HttpRequest request = requestFactory.buildGetRequest(url);
-		System.out.println(url);
 		HttpResponse response = request.execute();
-		System.out.println(response.parseAsString());
 		List<String> photoIds = new ArrayList<String>();
 		photoIds = parsePhotoResponse(response.parseAsString());
 		return photoIds;
@@ -122,8 +149,9 @@ public class flickrPhotoSearchREST {
 		return tempList;
 	}
 
-	private static List<String> getPhotosFromPlace(String placeId)
-			throws IOException, ParserConfigurationException, SAXException {
+	private static List<String> getPhotosFromPlace(String placeId,
+			String licenses) throws IOException, ParserConfigurationException,
+			SAXException {
 
 		HttpTransport httpTransport = new NetHttpTransport();
 		HttpRequestFactory requestFactory = httpTransport
@@ -132,10 +160,10 @@ public class flickrPhotoSearchREST {
 		url.put("api_key", properties.get("API_KEY"));
 		url.put("method", "flickr.photos.search");
 		url.put("place_id", placeId);
+		url.put("extras", "url_o");
+		url.put("license", licenses);
 		HttpRequest request = requestFactory.buildGetRequest(url);
-		System.out.println(url);
 		HttpResponse response = request.execute();
-		System.out.println(response.parseAsString());
 		List<String> photoIds = new ArrayList<String>();
 		photoIds = parsePhotoResponse(response.parseAsString());
 		return photoIds;
@@ -143,16 +171,23 @@ public class flickrPhotoSearchREST {
 
 	private static List<String> parsePhotoResponse(String xmlResponse)
 			throws ParserConfigurationException, SAXException, IOException {
-		{
-			List<String> tempList = new ArrayList<String>();
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			DocumentBuilder db = dbf.newDocumentBuilder();
-			InputSource is = new InputSource();
-			is.setCharacterStream(new StringReader(xmlResponse));
-			Document document = db.parse(is);
-			System.out.println(xmlResponse);
-			NodeList photos = document.getElementsByTagName("photos");
-			return null;
+
+		List<String> tempList = new ArrayList<String>();
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		DocumentBuilder db = dbf.newDocumentBuilder();
+		InputSource is = new InputSource();
+		is.setCharacterStream(new StringReader(xmlResponse));
+		Document document = db.parse(is);
+		System.out.println(xmlResponse);
+		NodeList photos = document.getElementsByTagName("photos");
+		for (int i = 0; i < photos.getLength(); i++) {
+			Element place = (Element) photos.item(i);
+			Node title = place.getElementsByTagName("photo").item(i);
+			NamedNodeMap nnm = title.getAttributes();
+			String idTemp = nnm.getNamedItem("id").toString().split("=")[1];
+			tempList.add(idTemp);
 		}
+		return tempList;
+
 	}
 }
