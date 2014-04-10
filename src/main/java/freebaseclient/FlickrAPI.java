@@ -33,7 +33,7 @@ public class FlickrAPI {
 	public FlickrAPI() {
 		properties = new Properties();
 		try {
-			properties.load(new FileInputStream("freebase.properties"));
+			properties.load(new FileInputStream("flickr.properties"));
 		} catch (FileNotFoundException e) {
 			System.out
 					.println("you need a file freebase.properties. look in your git for freebase.properties.sample and rename it");
@@ -49,12 +49,12 @@ public class FlickrAPI {
 		url.put("api_key", properties.get("API_KEY"));
 		url.put("method", "flickr.photos.search");
 		url.put("text", queryText);
-		url.put("extras", "url_o,owner_name,license");
+		url.put("extras", "url_o,owner_name,license, views, media");
 		url.put("license", licenses);
 		url.put("sort", "relevance");
 		url.put("format", "json");
 		System.out.println(url);
-		JSONObject response = makeHttpRequest(url);
+		String response = makeHttpRequest(url);
 		System.out.println(response);
 		List<FlickrPhoto> photoIds = new ArrayList<FlickrPhoto>();
 		try {
@@ -69,7 +69,7 @@ public class FlickrAPI {
 		return photoIds;
 	}
 
-	private JSONObject makeHttpRequest(GenericUrl url) {
+	private String makeHttpRequest(GenericUrl url) {
 		HttpTransport httpTransport = new NetHttpTransport();
 		HttpRequestFactory requestFactory = httpTransport
 				.createRequestFactory();
@@ -77,26 +77,21 @@ public class FlickrAPI {
 		try {
 			request = requestFactory.buildGetRequest(url);
 			HttpResponse httpResponse = request.execute();
-			JSONParser parser = new JSONParser();
-			return (JSONObject) parser.parse(httpResponse.parseAsString());
+			return httpResponse.parseAsString();
 
 		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		} catch (ParseException e) {
 			e.printStackTrace();
 			return null;
 		}
 	}
 
-	private List<FlickrPhoto> parsePhotoResponse(JSONObject jsonpResponse,
+	private List<FlickrPhoto> parsePhotoResponse(String jsonpResponse,
 			String queryText, String licenses) throws IOException,
 			org.json.simple.parser.ParseException {
 
 		List<FlickrPhoto> tempList = new ArrayList<FlickrPhoto>();
-		String jsonpTemp = jsonpResponse.toString();
-		String jsonResponse = jsonpTemp.substring(jsonpTemp.indexOf("(") + 1,
-				jsonpTemp.lastIndexOf(")"));
+		String jsonResponse = jsonpResponse.substring(
+				jsonpResponse.indexOf("(") + 1, jsonpResponse.lastIndexOf(")"));
 		JSONParser jsonparser = new JSONParser();
 		try {
 			JSONObject response = (JSONObject) jsonparser.parse(jsonResponse);
@@ -110,11 +105,13 @@ public class FlickrAPI {
 				JSONObject photoData = (JSONObject) photoList.get(i);
 				photoTemp.setUrl(photoData.get("url_o").toString());
 				photoTemp.setLicense(photoData.get("license").toString());
-				photoTemp.setMediaStatus(photoData.get("key").toString());
+				// photoTemp.setMediaStatus(photoData.get("key").toString());
 				photoTemp.setOwnerName(photoData.get("ownername").toString());
 				photoTemp.setViews(Integer.parseInt(photoData.get("views")
 						.toString()));
 				tempList.add(photoTemp);
+				System.out.println(photoTemp.toString());
+				System.out.println(page);
 			}
 			if (page < pages) {
 				getNextPage(queryText, licenses, 2, tempList);
@@ -133,12 +130,12 @@ public class FlickrAPI {
 		url.put("api_key", properties.get("API_KEY"));
 		url.put("method", "flickr.photos.search");
 		url.put("text", queryText);
-		url.put("extras", "url_o,owner_name,license");
+		url.put("extras", "url_o,owner_name,license, views, media");
 		url.put("license", licenses);
 		url.put("sort", "relevance");
 		url.put("format", "json");
 		url.put("page", page);
-		JSONObject jsonpResponse = makeHttpRequest(url);
+		String jsonpResponse = makeHttpRequest(url);
 		String jsonpTemp = jsonpResponse.toString();
 		String jsonResponse = jsonpTemp.substring(jsonpTemp.indexOf("(") + 1,
 				jsonpTemp.lastIndexOf(")"));
@@ -148,6 +145,7 @@ public class FlickrAPI {
 			JSONObject responsePhotos = (JSONObject) response.get("photos");
 			int newPage = Integer.parseInt(responsePhotos.get("page")
 					.toString());
+			newPage += 1;
 			int pages = Integer
 					.parseInt(responsePhotos.get("pages").toString());
 			JSONArray photoList = (JSONArray) responsePhotos.get("photo");
@@ -156,13 +154,17 @@ public class FlickrAPI {
 				JSONObject photoData = (JSONObject) photoList.get(i);
 				photoTemp.setUrl(photoData.get("url_o").toString());
 				photoTemp.setLicense(photoData.get("license").toString());
-				photoTemp.setMediaStatus(photoData.get("key").toString());
+				photoTemp.setTitle(photoData.get("title").toString());
+				photoTemp.setMediaStatus(photoData.get("media_status")
+						.toString());
 				photoTemp.setOwnerName(photoData.get("ownername").toString());
 				photoTemp.setViews(Integer.parseInt(photoData.get("views")
 						.toString()));
 				tempList.add(photoTemp);
+				System.out.println(photoTemp.toString());
+				System.out.println(page);
 			}
-			if (newPage < pages) {
+			if (page < pages) {
 				getNextPage(queryText, licenses, newPage, tempList);
 			}
 		} catch (ClassCastException ce) {
