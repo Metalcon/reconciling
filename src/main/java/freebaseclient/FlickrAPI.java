@@ -57,15 +57,7 @@ public class FlickrAPI {
 		String response = makeHttpRequest(url);
 		System.out.println(response);
 		List<FlickrPhoto> photoIds = new ArrayList<FlickrPhoto>();
-		try {
-			photoIds = parsePhotoResponse(response, queryText, licenses);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		photoIds = parsePhotoResponse(response, queryText, licenses);
 		return photoIds;
 	}
 
@@ -86,8 +78,7 @@ public class FlickrAPI {
 	}
 
 	private List<FlickrPhoto> parsePhotoResponse(String jsonpResponse,
-			String queryText, String licenses) throws IOException,
-			org.json.simple.parser.ParseException {
+			String queryText, String licenses) {
 
 		List<FlickrPhoto> tempList = new ArrayList<FlickrPhoto>();
 		String jsonResponse = jsonpResponse.substring(
@@ -105,7 +96,9 @@ public class FlickrAPI {
 				JSONObject photoData = (JSONObject) photoList.get(i);
 				photoTemp.setUrl(photoData.get("url_o").toString());
 				photoTemp.setLicense(photoData.get("license").toString());
-				// photoTemp.setMediaStatus(photoData.get("key").toString());
+				photoTemp.setMediaStatus(photoData.get("media_status")
+						.toString());
+				photoTemp.setTitle(photoData.get("title").toString());
 				photoTemp.setOwnerName(photoData.get("ownername").toString());
 				photoTemp.setViews(Integer.parseInt(photoData.get("views")
 						.toString()));
@@ -114,11 +107,14 @@ public class FlickrAPI {
 				System.out.println(page);
 			}
 			if (page < pages) {
-				getNextPage(queryText, licenses, 2, tempList);
+				getNextPage(queryText, licenses, ++page, tempList);
 			}
 		} catch (ClassCastException ce) {
 			System.err
 					.println("Typecast failed. Response is probably broken. Can be caused by bad request");
+		} catch (ParseException e) {
+			System.err.println("Error parsing");
+			e.printStackTrace();
 		}
 		// if (page < pages) {request next page}
 		return tempList;
@@ -135,45 +131,28 @@ public class FlickrAPI {
 		url.put("sort", "relevance");
 		url.put("format", "json");
 		url.put("page", page);
-		String jsonpResponse = makeHttpRequest(url);
-		String jsonpTemp = jsonpResponse.toString();
-		String jsonResponse = jsonpTemp.substring(jsonpTemp.indexOf("(") + 1,
-				jsonpTemp.lastIndexOf(")"));
-		JSONParser jsonparser = new JSONParser();
-		try {
-			JSONObject response = (JSONObject) jsonparser.parse(jsonResponse);
-			JSONObject responsePhotos = (JSONObject) response.get("photos");
-			int newPage = Integer.parseInt(responsePhotos.get("page")
-					.toString());
-			newPage += 1;
-			int pages = Integer
-					.parseInt(responsePhotos.get("pages").toString());
-			JSONArray photoList = (JSONArray) responsePhotos.get("photo");
-			for (int i = 0; i < photoList.size(); ++i) {
-				FlickrPhoto photoTemp = new FlickrPhoto();
-				JSONObject photoData = (JSONObject) photoList.get(i);
-				photoTemp.setUrl(photoData.get("url_o").toString());
-				photoTemp.setLicense(photoData.get("license").toString());
-				photoTemp.setTitle(photoData.get("title").toString());
-				photoTemp.setMediaStatus(photoData.get("media_status")
-						.toString());
-				photoTemp.setOwnerName(photoData.get("ownername").toString());
-				photoTemp.setViews(Integer.parseInt(photoData.get("views")
-						.toString()));
-				tempList.add(photoTemp);
-				System.out.println(photoTemp.toString());
-				System.out.println(page);
-			}
-			if (page < pages) {
-				getNextPage(queryText, licenses, newPage, tempList);
-			}
-		} catch (ClassCastException ce) {
-			System.err
-					.println("Typecast failed. Response is probably broken. Can be caused by bad request");
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		String response = makeHttpRequest(url);
+		tempList = parsePhotoResponse(response, queryText, licenses);
 
 	}
+
+	public List<FlickrPhoto> getPhotosByPlaceAndQuery(String queryText,
+			String licenses, String placeId) {
+		GenericUrl url = new GenericUrl("https://api.flickr.com/services/rest/");
+		url.put("api_key", properties.get("API_KEY"));
+		url.put("method", "flickr.photos.search");
+		url.put("text", queryText);
+		url.put("extras", "url_o,owner_name,license, views, media");
+		url.put("license", licenses);
+		url.put("sort", "relevance");
+		url.put("format", "json");
+		url.put("place_id", placeId);
+		System.out.println(url);
+		String response = makeHttpRequest(url);
+		System.out.println(response);
+		List<FlickrPhoto> photoIds = new ArrayList<FlickrPhoto>();
+		photoIds = parsePhotoResponse(response, queryText, licenses);
+		return photoIds;
+	}
+
 }
