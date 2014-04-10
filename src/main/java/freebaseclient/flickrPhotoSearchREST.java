@@ -110,6 +110,7 @@ public class flickrPhotoSearchREST {
 		url.put("license", licenses);
 		url.put("sort", "relevance");
 		url.put("format", "json");
+		System.out.println(url);
 		HttpRequest request = requestFactory.buildGetRequest(url);
 		HttpResponse response = request.execute();
 		List<String> photoIds = new ArrayList<String>();
