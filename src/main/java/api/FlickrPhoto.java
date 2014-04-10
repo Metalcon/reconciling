@@ -58,7 +58,7 @@ public class FlickrPhoto {
 
 	public String toString() {
 		String response = "";
-		response = "------------------------" + "Titel: " + title + "\n"
+		response = "------------------------" + "\n" + "Titel: " + title + "\n"
 				+ "Url: " + url + "\n" + "MediaStatus: " + mediaStatus + "\n"
 				+ "Owner-Name: " + ownerName + "\n" + "License: " + license
 				+ "\n" + "Views: " + views + "\n";
