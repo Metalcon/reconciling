@@ -24,7 +24,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 
 /**
  * 
- * @author tobi
+ * @author tobi, Christian Schowalter
  * 
  */
 
@@ -292,6 +292,36 @@ public class FlickrAPI {
 		}
 		return returnString;
 	}
+
+	/**
+	 * 
+	 * @param queryText
+	 *            Is a String of a search term.
+	 * @param licenses
+	 *            defines what kind of licensed photos should be returned.
+	 *            Multiple licenses are possible. Our default is "4,5,6,7,8"<br>
+	 *            0 = all rights reserved. <br>
+	 *            1 = Attribution-NonCommercial-ShareAlike License <br>
+	 *            2 = Attribution-NonCommercial License <br>
+	 *            3 = Attribution-NonCommercial-NoDerivs License <br>
+	 *            4 = Attribution License <br>
+	 *            5 = Attribution-ShareAlike License <br>
+	 *            6 = Attribution-NoDerivs License <br>
+	 *            7 = No known copyright restrictions <br>
+	 *            8 = United States Government Work <br>
+	 * @param placeId
+	 *            A Flickr place_id. Can be obtained via the getPlace methods
+	 * @param minTakenDate
+	 *            The earliest date photos looking for were taken
+	 * @param maxTakenDate
+	 *            The latest date photos looking for were taken
+	 * @return Returns a List<FlickrPhoto> with all found photos matching the
+	 *         query
+	 * 
+	 *         This method requires a search term and the kind of licenses
+	 *         defined above. It delivers a List of FlickrPhoto objects
+	 *         containing the search results
+	 */
 
 	public List<FlickrPhoto> getPhotosByPlaceQueryAndTime(String queryText,
 			String licenses, String placeId, Date minTakenDate,
