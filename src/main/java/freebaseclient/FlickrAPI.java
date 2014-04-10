@@ -87,7 +87,7 @@ public class FlickrAPI {
 	}
 
 	/**
-	 * helper function to make an http request to youtube
+	 * helper function to make an http request to flickr
 	 * 
 	 * @param url
 	 * @return
