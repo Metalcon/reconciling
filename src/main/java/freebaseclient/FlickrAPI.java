@@ -33,10 +33,10 @@ public class FlickrAPI {
 	public FlickrAPI() {
 		properties = new Properties();
 		try {
-			properties.load(new FileInputStream("freebase.properties"));
+			properties.load(new FileInputStream("flickr.properties"));
 		} catch (FileNotFoundException e) {
-			System.out
-					.println("you need a file freebase.properties. look in your git for freebase.properties.sample and rename it");
+			System.err
+					.println("you need a file flickr.properties. For more information, read the README.md");
 			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
