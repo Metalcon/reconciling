@@ -77,11 +77,10 @@ public class FlickrAPI {
 		url.put("license", licenses);
 		url.put("sort", "relevance");
 		url.put("format", "json");
-		System.out.println(url);
 		String response = makeHttpRequest(url);
-		System.out.println(response);
+		System.out.println(url);
 		List<FlickrPhoto> photoIds = new ArrayList<FlickrPhoto>();
-		photoIds = parsePhotoResponse(response, queryText, licenses);
+		parsePhotoResponse(response, queryText, licenses, photoIds);
 		return photoIds;
 	}
 
@@ -89,7 +88,7 @@ public class FlickrAPI {
 	 * helper function to make an http request to youtube
 	 * 
 	 * @param url
-	 * @return
+	 * @return Returns a JSON String
 	 */
 
 	private String makeHttpRequest(GenericUrl url) {
@@ -100,8 +99,11 @@ public class FlickrAPI {
 		try {
 			request = requestFactory.buildGetRequest(url);
 			HttpResponse httpResponse = request.execute();
-			return httpResponse.parseAsString();
-
+			String httpResponseString = httpResponse.parseAsString();
+			String response = httpResponseString.substring(
+					httpResponseString.indexOf("(") + 1,
+					httpResponseString.lastIndexOf(")"));
+			return response;
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
@@ -110,9 +112,9 @@ public class FlickrAPI {
 
 	/**
 	 * 
-	 * @param jsonpResponse
+	 * @param jsonResponse
 	 *            This is the String containing the results created from
-	 *            makeHttpRequest()
+	 *            makeHttpRequest(), in form of a JSON
 	 * @param queryText
 	 *            This is the search term string that is passed down from
 	 *            getPhotosByQuery()
@@ -125,12 +127,9 @@ public class FlickrAPI {
 	 *         FlickrPhoto objects and puts them into a List
 	 */
 
-	private List<FlickrPhoto> parsePhotoResponse(String jsonpResponse,
-			String queryText, String licenses) {
+	private void parsePhotoResponse(String jsonResponse, String queryText,
+			String licenses, List<FlickrPhoto> tempList) {
 
-		List<FlickrPhoto> tempList = new ArrayList<FlickrPhoto>();
-		String jsonResponse = jsonpResponse.substring(
-				jsonpResponse.indexOf("(") + 1, jsonpResponse.lastIndexOf(")"));
 		JSONParser jsonparser = new JSONParser();
 		try {
 			JSONObject response = (JSONObject) jsonparser.parse(jsonResponse);
@@ -151,8 +150,6 @@ public class FlickrAPI {
 				photoTemp.setViews(Integer.parseInt(photoData.get("views")
 						.toString()));
 				tempList.add(photoTemp);
-				System.out.println(photoTemp.toString());
-				System.out.println(page);
 			}
 			if (page < pages) {
 				getNextPage(queryText, licenses, ++page, tempList);
@@ -164,7 +161,6 @@ public class FlickrAPI {
 			System.err.println("Error parsing response");
 		}
 		// if (page < pages) {request next page}
-		return tempList;
 	}
 
 	/**
@@ -198,12 +194,12 @@ public class FlickrAPI {
 		url.put("format", "json");
 		url.put("page", page);
 		String response = makeHttpRequest(url);
-		tempList = parsePhotoResponse(response, queryText, licenses);
+		parsePhotoResponse(response, queryText, licenses, tempList);
 
 	}
 
 	public List<FlickrPhoto> getPhotosByPlaceAndQuery(String queryText,
-			String licenses, String placeId) {
+			String licenses, String placeId, List<FlickrPhoto> photoIds) {
 		GenericUrl url = new GenericUrl("https://api.flickr.com/services/rest/");
 		url.put("api_key", properties.get("API_KEY"));
 		url.put("method", "flickr.photos.search");
@@ -216,9 +212,44 @@ public class FlickrAPI {
 		System.out.println(url);
 		String response = makeHttpRequest(url);
 		System.out.println(response);
-		List<FlickrPhoto> photoIds = new ArrayList<FlickrPhoto>();
-		photoIds = parsePhotoResponse(response, queryText, licenses);
+		parsePhotoResponse(response, queryText, licenses, photoIds);
 		return photoIds;
+	}
+
+	public List<String> getPlaceId(String place) throws IOException,
+			ParseException, org.json.simple.parser.ParseException {
+		GenericUrl url = new GenericUrl("https://api.flickr.com/services/rest/");
+		url.put("api_key", properties.get("API_KEY"));
+		url.put("method", "flickr.places.find");
+		url.put("query", place);
+		url.put("format", "json");
+		String response = makeHttpRequest(url);
+		List<String> placeIds = new ArrayList<String>();
+		placeIds = parsePlacesResponse(response);
+		return placeIds;
+	}
+
+	private List<String> parsePlacesResponse(String jsonResponse) {
+		List<String> tempList = new ArrayList<String>();
+		JSONObject response = new JSONObject();
+		JSONParser jsonparser = new JSONParser();
+		try {
+			response = (JSONObject) jsonparser.parse(jsonResponse);
+			JSONObject responsePhotos = (JSONObject) response.get("places");
+			JSONArray photoList = (JSONArray) responsePhotos.get("place");
+			for (int i = 0; i < photoList.size(); ++i) {
+				JSONObject photoData = (JSONObject) photoList.get(i);
+
+				tempList.add(photoData.get("place_id").toString());
+			}
+		} catch (ClassCastException ce) {
+			System.err
+					.println("Typecast failed. Response is probably broken. Can be caused by bad request");
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return tempList;
 	}
 
 }
