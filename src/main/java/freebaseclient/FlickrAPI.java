@@ -44,6 +44,30 @@ public class FlickrAPI {
 		}
 	}
 
+	/**
+	 * 
+	 * @param queryText
+	 *            Is a String of a search term.
+	 * @param licenses
+	 *            defines what kind of licensed photos should be returned.
+	 *            Multiple licenses are possible. Our default is "4,5,6,7,8"<br>
+	 *            0 = all rights reserved. <br>
+	 *            1 = Attribution-NonCommercial-ShareAlike License <br>
+	 *            2 = Attribution-NonCommercial License <br>
+	 *            3 = Attribution-NonCommercial-NoDerivs License <br>
+	 *            4 = Attribution License <br>
+	 *            5 = Attribution-ShareAlike License <br>
+	 *            6 = Attribution-NoDerivs License <br>
+	 *            7 = No known copyright restrictions <br>
+	 *            8 = United States Government Work <br>
+	 * @return Returns a List<FlickrPhoto> with all found photos matching the
+	 *         query
+	 * 
+	 *         This method requires a search term and the kind of licenses
+	 *         defined above. It delivers a List of FlickrPhoto objects
+	 *         containing the search results
+	 */
+
 	public List<FlickrPhoto> getPhotosByQuery(String queryText, String licenses) {
 		GenericUrl url = new GenericUrl("https://api.flickr.com/services/rest/");
 		url.put("api_key", properties.get("API_KEY"));
@@ -57,17 +81,16 @@ public class FlickrAPI {
 		String response = makeHttpRequest(url);
 		System.out.println(response);
 		List<FlickrPhoto> photoIds = new ArrayList<FlickrPhoto>();
-		try {
-			photoIds = parsePhotoResponse(response, queryText, licenses);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		photoIds = parsePhotoResponse(response, queryText, licenses);
 		return photoIds;
 	}
+
+	/**
+	 * helper function to make an http request to youtube
+	 * 
+	 * @param url
+	 * @return
+	 */
 
 	private String makeHttpRequest(GenericUrl url) {
 		HttpTransport httpTransport = new NetHttpTransport();
@@ -85,9 +108,25 @@ public class FlickrAPI {
 		}
 	}
 
+	/**
+	 * 
+	 * @param jsonpResponse
+	 *            This is the String containing the results created from
+	 *            makeHttpRequest()
+	 * @param queryText
+	 *            This is the search term string that is passed down from
+	 *            getPhotosByQuery()
+	 * @param licenses
+	 *            This is the licenses string that is passed down from
+	 *            getPhotosByQuery()
+	 * @return returns a List<FlickrPhoto> with the parsed results
+	 * 
+	 *         This method is an internal method to parse the Photo results into
+	 *         FlickrPhoto objects and puts them into a List
+	 */
+
 	private List<FlickrPhoto> parsePhotoResponse(String jsonpResponse,
-			String queryText, String licenses) throws IOException,
-			org.json.simple.parser.ParseException {
+			String queryText, String licenses) {
 
 		List<FlickrPhoto> tempList = new ArrayList<FlickrPhoto>();
 		String jsonResponse = jsonpResponse.substring(
@@ -105,7 +144,9 @@ public class FlickrAPI {
 				JSONObject photoData = (JSONObject) photoList.get(i);
 				photoTemp.setUrl(photoData.get("url_o").toString());
 				photoTemp.setLicense(photoData.get("license").toString());
-				// photoTemp.setMediaStatus(photoData.get("key").toString());
+				photoTemp.setMediaStatus(photoData.get("media_status")
+						.toString());
+				photoTemp.setTitle(photoData.get("title").toString());
 				photoTemp.setOwnerName(photoData.get("ownername").toString());
 				photoTemp.setViews(Integer.parseInt(photoData.get("views")
 						.toString()));
@@ -119,10 +160,32 @@ public class FlickrAPI {
 		} catch (ClassCastException ce) {
 			System.err
 					.println("Typecast failed. Response is probably broken. Can be caused by bad request");
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		// if (page < pages) {request next page}
 		return tempList;
 	}
+
+	/**
+	 * 
+	 * @param queryText
+	 *            This is the search term string that is passed down from
+	 *            getPhotosByQuery()
+	 * @param licenses
+	 *            This is the licenses string that is passed down from
+	 *            getPhotosByQuery()
+	 * @param page
+	 *            This is a int counter to make a new request to flickr with
+	 *            this page number
+	 * @param tempList
+	 *            This is a List<FlickrPhoto> with the search results
+	 * 
+	 *            An internal method to navigate multiple pages of search
+	 *            results. It adds the results to the existing List created in
+	 *            parsePhotoResponse()
+	 */
 
 	private void getNextPage(String queryText, String licenses, int page,
 			List<FlickrPhoto> tempList) {

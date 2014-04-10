@@ -156,7 +156,6 @@ public class flickrPhotoSearchREST {
 
 		HttpRequest request = requestFactory.buildGetRequest(url);
 		HttpResponse response = request.execute();
-		// System.out.println(response.parseAsString());
 		List<String> placeIds = new ArrayList<String>();
 		placeIds = parsePlacesResponse(response.parseAsString());
 
