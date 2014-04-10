@@ -13,8 +13,7 @@ public class FlickrTest {
 		String licenses = "4,5,6,7,8";
 		List<FlickrPhoto> photoTest = new ArrayList<FlickrPhoto>();
 
-		String placeIDTest = flickrTest.getPlaceIdByGeoCoord(50.286314,
-				2.761384);
+		String placeIDTest = flickrTest.getPlaceIdByName("Koblenz");
 		System.out.println(placeIDTest);
 
 		photoTest = flickrTest.getPhotosByQuery(query, licenses);

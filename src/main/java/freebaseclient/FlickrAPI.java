@@ -217,6 +217,17 @@ public class FlickrAPI {
 		return photoIds;
 	}
 
+	/**
+	 * 
+	 * @param place
+	 *            Defines the place that you need the flickrPlaceId for. Can
+	 *            search only for place ("Koblenz"), but can it specify more by
+	 *            adding the state ("Koblenz Rheinland-Pfalz") /
+	 *            ("Koblenz RLP"). Just to show a few examples
+	 * @return Returns the unique flickrPlaceId
+	 * 
+	 *         This method can be used to retrieve FlickrPlaceIDs by name
+	 */
 	public String getPlaceIdByName(String place) {
 		GenericUrl url = new GenericUrl("https://api.flickr.com/services/rest/");
 		url.put("api_key", properties.get("API_KEY"));
@@ -228,6 +239,18 @@ public class FlickrAPI {
 		return placeId;
 	}
 
+	/**
+	 * 
+	 * @param lat
+	 *            The latitude coordinate
+	 * @param lon
+	 *            The longitude coordinate
+	 * @return Returns the unique flickrPlaceID
+	 * 
+	 *         This method can be used to retrieve FlickrPlaceIDs by its geo
+	 *         coordinates
+	 */
+
 	public String getPlaceIdByGeoCoord(double lat, double lon) {
 		GenericUrl url = new GenericUrl("https://api.flickr.com/services/rest/");
 		url.put("api_key", properties.get("API_KEY"));
@@ -235,11 +258,21 @@ public class FlickrAPI {
 		url.put("lat", lat);
 		url.put("lon", lon);
 		url.put("format", "json");
-		System.out.println(url);
 		String response = makeHttpRequest(url);
 		String placeId = parsePlacesResponse(response);
 		return placeId;
 	}
+
+	/**
+	 * 
+	 * @param jsonResponse
+	 *            Is the JSON containing the information for the place generated
+	 *            in getPlaceIdByGeoCoord() and getPlaceIdByName()
+	 * @return String with the unique FlickrPlaceID
+	 * 
+	 *         This is a internal helper method to parse the JSON files
+	 *         containing the informations about the places
+	 */
 
 	private String parsePlacesResponse(String jsonResponse) {
 		JSONParser jsonparser = new JSONParser();
