@@ -217,32 +217,39 @@ public class FlickrAPI {
 		return photoIds;
 	}
 
-	public List<String> getPlaceId(String place) throws IOException,
-			ParseException, org.json.simple.parser.ParseException {
+	public String getPlaceIdByName(String place) {
 		GenericUrl url = new GenericUrl("https://api.flickr.com/services/rest/");
 		url.put("api_key", properties.get("API_KEY"));
 		url.put("method", "flickr.places.find");
 		url.put("query", place);
 		url.put("format", "json");
 		String response = makeHttpRequest(url);
-		List<String> placeIds = new ArrayList<String>();
-		placeIds = parsePlacesResponse(response);
-		return placeIds;
+		String placeId = parsePlacesResponse(response);
+		return placeId;
 	}
 
-	private List<String> parsePlacesResponse(String jsonResponse) {
-		List<String> tempList = new ArrayList<String>();
-		JSONObject response = new JSONObject();
+	public String getPlaceIdByGeoCoord(double lat, double lon) {
+		GenericUrl url = new GenericUrl("https://api.flickr.com/services/rest/");
+		url.put("api_key", properties.get("API_KEY"));
+		url.put("method", "flickr.places.findByLatLon");
+		url.put("lat", lat);
+		url.put("lon", lon);
+		url.put("format", "json");
+		System.out.println(url);
+		String response = makeHttpRequest(url);
+		String placeId = parsePlacesResponse(response);
+		return placeId;
+	}
+
+	private String parsePlacesResponse(String jsonResponse) {
 		JSONParser jsonparser = new JSONParser();
+		String returnString = "";
 		try {
-			response = (JSONObject) jsonparser.parse(jsonResponse);
+			JSONObject response = (JSONObject) jsonparser.parse(jsonResponse);
 			JSONObject responsePhotos = (JSONObject) response.get("places");
 			JSONArray photoList = (JSONArray) responsePhotos.get("place");
-			for (int i = 0; i < photoList.size(); ++i) {
-				JSONObject photoData = (JSONObject) photoList.get(i);
-
-				tempList.add(photoData.get("place_id").toString());
-			}
+			JSONObject photoData = (JSONObject) photoList.get(0);
+			returnString = photoData.get("place_id").toString();
 		} catch (ClassCastException ce) {
 			System.err
 					.println("Typecast failed. Response is probably broken. Can be caused by bad request");
@@ -250,7 +257,7 @@ public class FlickrAPI {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return tempList;
+		return returnString;
 	}
 
 	public List<FlickrPhoto> getPhotosByPlaceQueryAndTime(String queryText,

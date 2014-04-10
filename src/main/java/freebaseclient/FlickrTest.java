@@ -12,11 +12,12 @@ public class FlickrTest {
 		String query = "wacken";
 		String licenses = "4,5,6,7,8";
 		List<FlickrPhoto> photoTest = new ArrayList<FlickrPhoto>();
+
+		String placeIDTest = flickrTest.getPlaceIdByGeoCoord(50.286314,
+				2.761384);
+		System.out.println(placeIDTest);
+
 		photoTest = flickrTest.getPhotosByQuery(query, licenses);
-		for (int i = 0; i < photoTest.size(); i++) {
-			System.out.println(photoTest.get(i).toString());
-		}
-		System.out.println("Results: " + photoTest.size());
 
 	}
 
