@@ -79,7 +79,6 @@ public class FlickrAPI {
 		url.put("sort", "relevance");
 		url.put("format", "json");
 		String response = makeHttpRequest(url);
-		System.out.println(url);
 		List<FlickrPhoto> photoIds = new ArrayList<FlickrPhoto>();
 		parsePhotoResponse(response, queryText, licenses, photoIds);
 		return photoIds;
@@ -210,9 +209,7 @@ public class FlickrAPI {
 		url.put("sort", "relevance");
 		url.put("format", "json");
 		url.put("place_id", placeId);
-		System.out.println(url);
 		String response = makeHttpRequest(url);
-		System.out.println(response);
 		parsePhotoResponse(response, queryText, licenses, photoIds);
 		return photoIds;
 	}
@@ -307,9 +304,7 @@ public class FlickrAPI {
 		url.put("place_id", placeId);
 		url.put("minTakenDate", minTakenDate.getTime());
 		url.put("maxTakenDate", maxTakenDate.getTime());
-		System.out.println(url);
 		String response = makeHttpRequest(url);
-		System.out.println(response);
 		List<FlickrPhoto> photoIds = new ArrayList<FlickrPhoto>();
 		parsePhotoResponse(response, queryText, licenses, photoIds);
 		return photoIds;

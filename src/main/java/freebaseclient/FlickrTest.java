@@ -15,7 +15,8 @@ public class FlickrTest {
 
 		String placeIDTest = flickrTest.getPlaceIdByName("Koblenz");
 		System.out.println(placeIDTest);
-
+		photoTest = flickrTest.getPhotosByQuery(query, licenses);
+		System.out.println(photoTest.get(0).toString());
 		photoTest = flickrTest.getPhotosByQuery(query, licenses);
 
 	}
