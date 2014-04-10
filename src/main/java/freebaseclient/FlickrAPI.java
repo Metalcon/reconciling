@@ -44,8 +44,7 @@ public class FlickrAPI {
 		}
 	}
 
-	private List<FlickrPhoto> getPhotosByQuery(String queryText, String licenses)
-			throws IOException, ParseException {
+	public List<FlickrPhoto> getPhotosByQuery(String queryText, String licenses) {
 		GenericUrl url = new GenericUrl("https://api.flickr.com/services/rest/");
 		url.put("api_key", properties.get("API_KEY"));
 		url.put("method", "flickr.photos.search");
@@ -54,9 +53,19 @@ public class FlickrAPI {
 		url.put("license", licenses);
 		url.put("sort", "relevance");
 		url.put("format", "json");
+		System.out.println(url);
 		JSONObject response = makeHttpRequest(url);
+		System.out.println(response);
 		List<FlickrPhoto> photoIds = new ArrayList<FlickrPhoto>();
-		photoIds = parsePhotoResponse(response, queryText, licenses);
+		try {
+			photoIds = parsePhotoResponse(response, queryText, licenses);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return photoIds;
 	}
 
