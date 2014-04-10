@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -85,7 +86,7 @@ public class FlickrAPI {
 	}
 
 	/**
-	 * helper function to make an http request to youtube
+	 * helper function to make an http request to flickr
 	 * 
 	 * @param url
 	 * @return Returns a JSON String
@@ -188,7 +189,7 @@ public class FlickrAPI {
 		url.put("api_key", properties.get("API_KEY"));
 		url.put("method", "flickr.photos.search");
 		url.put("text", queryText);
-		url.put("extras", "url_o,owner_name,license, views, media");
+		url.put("extras", "url_o,owner_name,license,views,media");
 		url.put("license", licenses);
 		url.put("sort", "relevance");
 		url.put("format", "json");
@@ -204,7 +205,7 @@ public class FlickrAPI {
 		url.put("api_key", properties.get("API_KEY"));
 		url.put("method", "flickr.photos.search");
 		url.put("text", queryText);
-		url.put("extras", "url_o,owner_name,license, views, media");
+		url.put("extras", "url_o,owner_name,license,views,media");
 		url.put("license", licenses);
 		url.put("sort", "relevance");
 		url.put("format", "json");
@@ -252,4 +253,25 @@ public class FlickrAPI {
 		return tempList;
 	}
 
+	public List<FlickrPhoto> getPhotosByPlaceQueryAndTime(String queryText,
+			String licenses, String placeId, Date minTakenDate,
+			Date maxTakenDate) {
+		GenericUrl url = new GenericUrl("https://api.flickr.com/services/rest/");
+		url.put("api_key", properties.get("API_KEY"));
+		url.put("method", "flickr.photos.search");
+		url.put("text", queryText);
+		url.put("extras", "url_o,owner_name,license,views,media");
+		url.put("license", licenses);
+		url.put("sort", "relevance");
+		url.put("format", "json");
+		url.put("place_id", placeId);
+		url.put("minTakenDate", minTakenDate.getTime());
+		url.put("maxTakenDate", maxTakenDate.getTime());
+		System.out.println(url);
+		String response = makeHttpRequest(url);
+		System.out.println(response);
+		List<FlickrPhoto> photoIds = new ArrayList<FlickrPhoto>();
+		parsePhotoResponse(response, queryText, licenses, photoIds);
+		return photoIds;
+	}
 }
