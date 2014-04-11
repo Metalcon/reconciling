@@ -69,7 +69,8 @@ public class FlickrAPI {
 	 *         containing the search results
 	 */
 
-	public List<FlickrPhoto> getPhotosByQuery(String queryText, String licenses) {
+	public List<FlickrPhoto> getPhotosByQuery(String queryText,
+			String licenses, List<String> tags) {
 		GenericUrl url = new GenericUrl("https://api.flickr.com/services/rest/");
 		url.put("api_key", properties.get("API_KEY"));
 		url.put("method", "flickr.photos.search");
@@ -78,6 +79,11 @@ public class FlickrAPI {
 		url.put("license", licenses);
 		url.put("sort", "relevance");
 		url.put("format", "json");
+		if (tags != null) {
+			for (int i = 0; i < tags.size(); ++i) {
+				url.put("tags", tags.get(i));
+			}
+		}
 		String response = makeHttpRequest(url);
 		List<FlickrPhoto> photoIds = new ArrayList<FlickrPhoto>();
 		parsePhotoResponse(response, queryText, licenses, photoIds);
@@ -323,7 +329,7 @@ public class FlickrAPI {
 
 	public List<FlickrPhoto> getPhotosByPlaceQueryAndTime(String queryText,
 			String licenses, String placeId, Date minTakenDate,
-			Date maxTakenDate) {
+			Date maxTakenDate, List<String> tags) {
 		GenericUrl url = new GenericUrl("https://api.flickr.com/services/rest/");
 		url.put("api_key", properties.get("API_KEY"));
 		url.put("method", "flickr.photos.search");
@@ -335,6 +341,11 @@ public class FlickrAPI {
 		url.put("place_id", placeId);
 		url.put("minTakenDate", minTakenDate.getTime());
 		url.put("maxTakenDate", maxTakenDate.getTime());
+		if (tags != null) {
+			for (int i = 0; i < tags.size(); ++i) {
+				url.put("tags", tags.get(i));
+			}
+		}
 		String response = makeHttpRequest(url);
 		List<FlickrPhoto> photoIds = new ArrayList<FlickrPhoto>();
 		parsePhotoResponse(response, queryText, licenses, photoIds);
