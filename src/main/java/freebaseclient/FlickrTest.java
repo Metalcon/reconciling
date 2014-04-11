@@ -33,7 +33,6 @@ public class FlickrTest {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 		List<FlickrPhoto> photoTest = new ArrayList<FlickrPhoto>();
 		// photoTest = flickrTest.getPhotosByQuery(query);
 		// photoTest = flickrTest.getPhotosByQueryAndPlace(query, placeName);
