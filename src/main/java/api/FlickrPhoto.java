@@ -2,6 +2,7 @@ package api;
 
 public class FlickrPhoto {
 	String title;
+	String photoId;
 	String url;
 	String mediaStatus;
 	String ownerName;
@@ -56,12 +57,21 @@ public class FlickrPhoto {
 		this.views = views;
 	}
 
+	public String getPhotoId() {
+		return photoId;
+	}
+
+	public void setPhotoId(String photoId) {
+		this.photoId = photoId;
+	}
+
 	public String toString() {
 		String response = "";
 		response = "------------------------" + "\n" + "Titel: " + title + "\n"
-				+ "Url: " + url + "\n" + "MediaStatus: " + mediaStatus + "\n"
-				+ "Owner-Name: " + ownerName + "\n" + "License: " + license
-				+ "\n" + "Views: " + views + "\n";
+				+ "Url:<img src=\" " + url + "\" width=\"400px\" >\n"
+				+ "MediaStatus: " + mediaStatus + "\n" + "Owner-Name: "
+				+ ownerName + "\n" + "License: " + license + "\n" + "Views: "
+				+ views + "\n <br>";
 		return response;
 	}
 }

@@ -199,7 +199,7 @@ public class FlickrAPI {
 	}
 
 	public List<FlickrPhoto> getPhotosByPlaceAndQuery(String queryText,
-			String licenses, String placeId, List<FlickrPhoto> photoIds) {
+			String licenses, String placeId) {
 		GenericUrl url = new GenericUrl("https://api.flickr.com/services/rest/");
 		url.put("api_key", properties.get("API_KEY"));
 		url.put("method", "flickr.photos.search");
@@ -210,6 +210,7 @@ public class FlickrAPI {
 		url.put("format", "json");
 		url.put("place_id", placeId);
 		String response = makeHttpRequest(url);
+		List<FlickrPhoto> photoIds = new ArrayList<FlickrPhoto>();
 		parsePhotoResponse(response, queryText, licenses, photoIds);
 		return photoIds;
 	}
