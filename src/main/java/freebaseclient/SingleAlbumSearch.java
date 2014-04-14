@@ -1,11 +1,16 @@
 package freebaseclient;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
@@ -37,7 +42,7 @@ public class SingleAlbumSearch {
 			System.out.println("my API-Key: " + properties.get("API_KEY"));
 			url.put("key", properties.get("API_KEY"));
 			HttpRequest request = requestFactory.buildGetRequest(url);
-			System.out.println(url);
+			System.out.println("url: " + url);
 			HttpResponse httpResponse = request.execute();
 			JSONObject response = (JSONObject) parser.parse(httpResponse
 					.parseAsString());
@@ -53,5 +58,43 @@ public class SingleAlbumSearch {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+	}
+
+	public List<String> returnAlbums(String bandMid) {
+		try {
+			properties.load(new FileInputStream("freebase.properties"));
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		HttpTransport httpTransport = new NetHttpTransport();
+		HttpRequestFactory requestFactory = httpTransport
+				.createRequestFactory();
+		JSONParser parser = new JSONParser();
+		GenericUrl url = new GenericUrl(
+				"https://www.googleapis.com/freebase/v1/mqlread");
+		String query = "[{\"mid\":\""
+				+ bandMid
+				+ "\",\"/music/artist/album\":[{\"name\":null , \"mid\":null}]}]";
+		url.put("query", query);
+		url.put("key", properties.get("API_KEY"));
+		try {
+			HttpRequest request = requestFactory.buildGetRequest(url);
+			HttpResponse httpResponse = request.execute();
+			JSONObject response = (JSONObject) parser.parse(httpResponse
+					.parseAsString());
+			JSONArray candidates = (JSONArray) response.get("candidate");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		List<String> returnList = new ArrayList<String>();
+		return returnList;
 	}
 }
