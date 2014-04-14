@@ -1,4 +1,4 @@
-package freebaseclient;
+package lastFMEvents;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -14,10 +14,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-
-import api.GeoLocation;
-import api.LastFMEventMetaData;
-import api.Venue;
 
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;

@@ -1,16 +1,16 @@
-package api;
+package flickrApi;
 
 import java.util.List;
 
 public class FlickrPhoto {
-	String title;
-	String photoId;
-	String url;
-	String mediaStatus;
-	String ownerName;
-	List<String> tags;
-	String license;
-	int views;
+	private String title;
+	private String photoId;
+	private String url;
+	private String mediaStatus;
+	private String ownerName;
+	private List<String> tags;
+	private String license;
+	private int views;
 
 	public String getTitle() {
 		return title;

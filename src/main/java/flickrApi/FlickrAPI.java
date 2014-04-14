@@ -1,4 +1,4 @@
-package freebaseclient;
+package flickrApi;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -13,8 +13,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-
-import api.FlickrPhoto;
 
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;

@@ -1,4 +1,4 @@
-package api;
+package lastFMEvents;
 
 import java.util.Date;
 import java.util.List;

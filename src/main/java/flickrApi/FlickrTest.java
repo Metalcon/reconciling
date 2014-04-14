@@ -1,4 +1,4 @@
-package freebaseclient;
+package flickrApi;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -10,8 +10,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import api.FlickrPhoto;
 
 public class FlickrTest {
 

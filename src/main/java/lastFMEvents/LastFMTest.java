@@ -1,12 +1,10 @@
-package freebaseclient;
+package lastFMEvents;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.json.simple.parser.ParseException;
-
-import api.LastFMEventMetaData;
 
 public class LastFMTest {
 
