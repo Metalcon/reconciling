@@ -41,20 +41,22 @@ public class AlbumDetailsAPI {
 
 	public List<Album> getAlbums(String bandMid) {
 
-		// TODO: get album-mids via band-mids
+		// get album-mids via band-mids
 		List<Album> albums = new ArrayList<Album>();
 		List<String> albumMidList = new ArrayList<String>();
 		albumMidList = getAlbumMids(bandMid);
 
-		// TODO: get primary-release-mids to alum-mids
+		// get primary-release-mids to alum-mids
 		List<String> primaryAlbumMidList = new ArrayList<String>();
 		primaryAlbumMidList = getPrimaryAlbums(albumMidList);
+
+		// TODO:
 
 		// TODO: get lastfm details to primary-release and store them as an
 		// Album List
 
 		// TODO: return Album List.
-		return null;
+		return albums;
 	}
 
 	private static List<String> getPrimaryAlbums(List<String> albumMidList) {
