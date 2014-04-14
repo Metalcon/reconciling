@@ -27,7 +27,7 @@ public class AlbumDetailsAPI {
 
 	public static void main(String[] args) {
 		List<String> albums = new ArrayList<String>();
-		albums = getAlbumMids("/m/04473z");
+		albums = getAlbumMids("/m/014_xj");
 		System.out.println(albums);
 	}
 
@@ -35,7 +35,8 @@ public class AlbumDetailsAPI {
 
 		// TODO: get album-mids via band-mids
 		List<Album> albums = new ArrayList<Album>();
-		albums = FreebaseAlbumSearch.getAlbumMids(bandMid);
+		List<String> albumMidList = new ArrayList<String>();
+		albumMidList = getAlbumMids(bandMid);
 
 		// TODO: get primary-release-mids to alum-mids
 
