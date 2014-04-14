@@ -38,4 +38,11 @@ public class Track {
 		this.mbid = mbid;
 	}
 
+	public String toString() {
+		String response = "";
+		response = "Trackname: " + name + "\n" + "Mbid: " + mbid + "\n"
+				+ "Duration: " + duration + "\n" + "Rank: " + rank + "\n";
+		return response;
+	}
+
 }
