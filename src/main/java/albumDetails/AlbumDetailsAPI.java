@@ -29,6 +29,14 @@ public class AlbumDetailsAPI {
 		List<String> albums = new ArrayList<String>();
 		albums = getAlbumMids("/m/014_xj");
 		System.out.println(albums);
+		List<String> primaryAlbums = new ArrayList<String>();
+		primaryAlbums = getPrimaryAlbums(albums);
+		System.out.println(primaryAlbums);
+
+		if (albums.equals(primaryAlbums)) {
+			System.out
+					.println("you've got the primary albums in the first request already. Try more albums to find out if this is always the case!");
+		}
 	}
 
 	public List<Album> getAlbums(String bandMid) {
@@ -39,12 +47,41 @@ public class AlbumDetailsAPI {
 		albumMidList = getAlbumMids(bandMid);
 
 		// TODO: get primary-release-mids to alum-mids
+		List<String> primaryAlbumMidList = new ArrayList<String>();
+		primaryAlbumMidList = getPrimaryAlbums(albumMidList);
 
 		// TODO: get lastfm details to primary-release and store them as an
 		// Album List
 
 		// TODO: return Album List.
 		return null;
+	}
+
+	private static List<String> getPrimaryAlbums(List<String> albumMidList) {
+		GenericUrl url = new GenericUrl(
+				"https://www.googleapis.com/freebase/v1/mqlread");
+
+		// requesting /common/topic/topic_equivalent_webpage via this JSON
+		// kind of request does always get a null response so we have to
+		// waste a second request to get the musicbrainz id.
+
+		List<String> returnList = new ArrayList<String>();
+
+		String albumMid = null;
+		for (int i = 0; i < albumMidList.size(); ++i) {
+			albumMid = albumMidList.get(i);
+			String query = "[{\"mid\": \"" + albumMid
+					+ "\", \"/music/album/primary_release\": null}]";
+			url.put("query", query);
+			url.put("key", properties.get("API_KEY"));
+			JSONObject response = makeHttpRequest(url);
+			JSONArray responseResult = (JSONArray) response.get("result");
+			JSONObject responseResults = (JSONObject) responseResult.get(0);
+			String primaryReleaseMid = responseResults.get("mid").toString();
+			returnList.add(responseResults.get("mid").toString());
+
+		}
+		return returnList;
 	}
 
 	private static JSONObject makeHttpRequest(GenericUrl url) {
