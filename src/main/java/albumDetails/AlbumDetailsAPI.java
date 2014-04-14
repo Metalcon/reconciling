@@ -27,12 +27,22 @@ public class AlbumDetailsAPI {
 
 	public static void main(String[] args) {
 		List<String> albums = new ArrayList<String>();
-		albums = returnAlbums("/m/04473z");
+		albums = getAlbumMids("/m/04473z");
 		System.out.println(albums);
 	}
 
 	public List<Album> getAlbums(String bandMid) {
-		// TODO:
+
+		// TODO: get album-mids via band-mids
+		List<Album> albums = new ArrayList<Album>();
+		albums = FreebaseAlbumSearch.getAlbumMids(bandMid);
+
+		// TODO: get primary-release-mids to alum-mids
+
+		// TODO: get lastfm details to primary-release and store them as an
+		// Album List
+
+		// TODO: return Album List.
 		return null;
 	}
 
@@ -56,7 +66,7 @@ public class AlbumDetailsAPI {
 		}
 	}
 
-	public static List<String> returnAlbums(String bandMid) {
+	public static List<String> getAlbumMids(String bandMid) {
 		try {
 			properties.load(new FileInputStream("freebase.properties"));
 		} catch (FileNotFoundException e) {
