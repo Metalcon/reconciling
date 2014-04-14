@@ -73,7 +73,8 @@ public class Album {
 		String response = "";
 		response = "Artist: " + artist + "\n" + "Album: " + albumName + "\n"
 				+ "Mbid : " + mbid + "\n" + "Playcount: " + playcount + "\n"
-				+ "Image: " + image + "\n" + "Release: " + releaseDate + "\n";
+				+ "Image: " + image + "\n" + "Release: " + releaseDate + "\n"
+				+ "Tracks: " + "\n" + tracks;
 		return response;
 	}
 }
