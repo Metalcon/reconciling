@@ -1,8 +1,6 @@
 package freebaseclient;
 
 import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 import org.json.simple.JSONArray;
@@ -15,6 +13,7 @@ import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
+import com.jayway.jsonpath.JsonPath;
 
 /**
  * 
@@ -54,7 +53,6 @@ public class SingleAlbumPrimaryReleaseSearch {
 			JSONArray responseResult = (JSONArray) response.get("result");
 			JSONObject responseResults = (JSONObject) responseResult.get(0);
 			System.out.println(responseResults);
-			List<GenericUrl> resultList = new ArrayList<GenericUrl>();
 			String primaryReleaseName = responseResults.get(
 					"/music/album/primary_release").toString();
 			String primaryReleaseMid = responseResults.get("mid").toString();
@@ -74,8 +72,25 @@ public class SingleAlbumPrimaryReleaseSearch {
 			HttpRequest request2 = requestFactory.buildGetRequest(url2);
 			System.out.println(url2);
 			HttpResponse httpResponse2 = request2.execute();
+			JSONObject response2 = (JSONObject) parser.parse(httpResponse2
+					.parseAsString());
+			JSONObject response2Property = (JSONObject) response2
+					.get("property");
+			JSONObject response2PropertyValues = (JSONObject) response2Property
+					.get("/common/topic/topic_equivalent_webpage");
+			JSONArray pages = (JSONArray) response2PropertyValues.get("values");
 
-			System.out.println(httpResponse2.parseAsString());
+			String resultUrl = null;
+			for (Object page : pages) {
+				GenericUrl pageUrl = new GenericUrl(JsonPath.read(page,
+						"$.value").toString());
+				if (pageUrl.toString().contains("http://musicbrainz.org")) {
+					resultUrl = pageUrl.toString();
+					break;
+				}
+
+			}
+			System.out.println(resultUrl);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
