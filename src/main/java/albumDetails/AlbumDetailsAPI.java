@@ -7,9 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import lastFMAlbum.Album;
-import lastFMAlbum.LastFMAlbumApi;
-
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -28,48 +25,48 @@ public class AlbumDetailsAPI {
 	public static Properties properties = new Properties();
 
 	public static void main(String[] args) {
-		List<String> albums = new ArrayList<String>();
-		// albums = getAlbumMids("/m/02gpxc");
-		List<String> primaryAlbums = new ArrayList<String>();
-		// primaryAlbums = getPrimaryAlbums(albums);
+		List<MusicbrainzAlbum> albums = new ArrayList<MusicbrainzAlbum>();
+		albums = getAlbumMids("/m/02gpxc");
+		List<MusicbrainzAlbum> primaryAlbums = new ArrayList<MusicbrainzAlbum>();
+		primaryAlbums = getPrimaryAlbums(albums);
 
 		if (albums.equals(primaryAlbums)) {
 			System.out
 					.println("you've got the primary albums in the first request already. Try more albums to find out if this is always the case!");
 		}
 
-		List<String> musicbrainzIds = new ArrayList<String>();
-		// musicbrainzIds = getMusicbrainzIds(primaryAlbums);
+		List<MusicbrainzAlbum> musicbrainzIds = new ArrayList<MusicbrainzAlbum>();
+		musicbrainzIds = getMusicbrainzIds(primaryAlbums);
 
-		List<Album> output = new ArrayList<Album>();
-		LastFMAlbumApi getLastFMInfo = new LastFMAlbumApi();
-		for (int i = 0; i < musicbrainzIds.size(); i++) {
-			Album tempAlbum = new Album();
-			String temp = musicbrainzIds.get(i);
-			tempAlbum = getLastFMInfo.getTracksByMbid(temp);
-			output.add(tempAlbum);
-		}
+		// List<Album> output = new ArrayList<Album>();
+		// LastFMAlbumApi getLastFMInfo = new LastFMAlbumApi();
+		// for (int i = 0; i < musicbrainzIds.size(); i++) {
+		// Album tempAlbum = new Album();
+		// String temp = musicbrainzIds.get(i);
+		// tempAlbum = getLastFMInfo.getTracksByMbid(temp);
+		// output.add(tempAlbum);
+		// }
 
-		for (int i = 0; i < output.size(); i++) {
-			if (!output.get(i).equals(null)) {
-				System.out.println(output.get(i).toString());
-			}
-		}
+		// for (int i = 0; i < output.size(); i++) {
+		// if (!output.get(i).equals(null)) {
+		// System.out.println(output.get(i).toString());
+		// }
+		// }
 	}
 
-	public List<MusicbrainzAlbum> getAlbums(String bandMid) {
+	public List<String> getAlbums(String bandMid) {
 
 		// get album-mids via band-mids
-		List<MusicbrainzAlbum> result = new ArrayList<MusicbrainzAlbum>();
+		List<String> result = new ArrayList<String>();
 		List<MusicbrainzAlbum> albumList = new ArrayList<MusicbrainzAlbum>();
-		albumList = getAlbums(bandMid);
+		albumList = getAlbumMids(bandMid);
 
 		// get primary-release-mids to album-mids
 		List<MusicbrainzAlbum> primaryAlbumMidList = new ArrayList<MusicbrainzAlbum>();
 		primaryAlbumMidList = getPrimaryAlbums(albumList);
 
 		// TODO: get Muiscbrainz-id
-		List<String> musicbrainzIds = new ArrayList<String>();
+		List<MusicbrainzAlbum> musicbrainzIds = new ArrayList<MusicbrainzAlbum>();
 		musicbrainzIds = getMusicbrainzIds(primaryAlbumMidList);
 
 		// TODO: get lastfm details to primary-release and store them as an
@@ -79,13 +76,18 @@ public class AlbumDetailsAPI {
 		return result;
 	}
 
-	private static List<String> getMusicbrainzIds(
+	private static List<MusicbrainzAlbum> getMusicbrainzIds(
 			List<MusicbrainzAlbum> primaryAlbumMidList) {
-		List<String> results = new ArrayList<String>();
+		List<MusicbrainzAlbum> results = new ArrayList<MusicbrainzAlbum>();
 		for (int i = 0; i < primaryAlbumMidList.size(); ++i) {
+			MusicbrainzAlbum musicbrainzAlbum = new MusicbrainzAlbum();
+			musicbrainzAlbum.setAlbum(primaryAlbumMidList.get(i).getAlbum());
+			musicbrainzAlbum.setArtist(primaryAlbumMidList.get(i).getArtist());
+			musicbrainzAlbum.setMid(primaryAlbumMidList.get(i).getMid());
+
 			GenericUrl url = new GenericUrl(
 					"https://www.googleapis.com/freebase/v1/topic"
-							+ primaryAlbumMidList.get(i));
+							+ primaryAlbumMidList.get(i).getMid());
 			url.put("filter", "/common/topic/topic_equivalent_webpage");
 			url.put("limit", "9001");
 			url.put("key", properties.get("API_KEY"));
@@ -112,7 +114,7 @@ public class AlbumDetailsAPI {
 			}
 			if (resultUrl != null) {
 				String[] result = resultUrl.split("group/");
-				results.add(result[1]);
+				musicbrainzAlbum.setMbid(result[1]);
 			} else {
 				results.add(null);
 			}
