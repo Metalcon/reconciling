@@ -29,7 +29,7 @@ public class AlbumDetailsAPI {
 
 	public static void main(String[] args) {
 		List<MusicbrainzAlbum> albums = new ArrayList<MusicbrainzAlbum>();
-		albums = getAlbumMids("/m/02gpxc");
+		albums = getAlbumMids("/m/03y2lh");
 		List<MusicbrainzAlbum> primaryAlbums = new ArrayList<MusicbrainzAlbum>();
 		primaryAlbums = getPrimaryAlbums(albums);
 

@@ -91,6 +91,7 @@ public class LastFMAlbumApi {
 			url.put("album", albumName);
 			response = makeHttpRequest(url);
 		}
+		System.out.println(url);
 		return processingSearchResults(response);
 	}
 
@@ -135,22 +136,43 @@ public class LastFMAlbumApi {
 			List<Track> tempTrackList = new ArrayList<Track>();
 			JSONObject responseAlbumTracks = (JSONObject) responseAlbum
 					.get("tracks");
-			JSONArray responseAlbumTracksTrack = (JSONArray) responseAlbumTracks
-					.get("track");
-			for (int i = 0; i < responseAlbumTracksTrack.size(); i++) {
+			Object typeTest = responseAlbumTracks.get("track");
+			if (typeTest instanceof JSONArray) {
+				JSONArray responseAlbumTracksTrack = (JSONArray) responseAlbumTracks
+						.get("track");
+				for (int i = 0; i < responseAlbumTracksTrack.size(); i++) {
+					Track tempTrack = new Track();
+					JSONObject track = (JSONObject) responseAlbumTracksTrack
+							.get(i);
+					tempTrack.setName(track.get("name").toString());
+					tempTrack.setMbid(track.get("mbid").toString());
+					JSONObject trackAttr = (JSONObject) track.get("@attr");
+					tempTrack.setRank(Integer.parseInt(trackAttr.get("rank")
+							.toString()));
+					if (!track.get("duration").equals(""))
+						tempTrack.setDuration(Integer.parseInt(track.get(
+								"duration").toString()));
+					tempTrackList.add(tempTrack);
+				}
+				returnAlbum.setTracks(tempTrackList);
+				return returnAlbum;
+			} else {
+				JSONObject track = (JSONObject) responseAlbumTracks
+						.get("track");
 				Track tempTrack = new Track();
-				JSONObject track = (JSONObject) responseAlbumTracksTrack.get(i);
 				tempTrack.setName(track.get("name").toString());
 				tempTrack.setMbid(track.get("mbid").toString());
 				JSONObject trackAttr = (JSONObject) track.get("@attr");
 				tempTrack.setRank(Integer.parseInt(trackAttr.get("rank")
 						.toString()));
-				tempTrack.setDuration(Integer.parseInt(track.get("duration")
-						.toString()));
+				if (!track.get("duration").equals(""))
+					tempTrack.setDuration(Integer.parseInt(track
+							.get("duration").toString()));
 				tempTrackList.add(tempTrack);
 			}
 			returnAlbum.setTracks(tempTrackList);
 			return returnAlbum;
+
 		}
 		return null;
 	}
