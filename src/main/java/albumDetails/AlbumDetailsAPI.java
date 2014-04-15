@@ -116,7 +116,7 @@ public class AlbumDetailsAPI {
 				String[] result = resultUrl.split("group/");
 				musicbrainzAlbum.setMbid(result[1]);
 			} else {
-				results.add(null);
+				results.add(musicbrainzAlbum);
 			}
 		}
 		return results;
