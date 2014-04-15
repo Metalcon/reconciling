@@ -2,9 +2,18 @@ package albumDetails;
 
 public class MusicbrainzAlbum {
 
+	private String mid;
 	private String mbid;
 	private String artist;
 	private String album;
+
+	public String getMid() {
+		return mid;
+	}
+
+	public void setMid(String mid) {
+		this.mid = mid;
+	}
 
 	public String getMbid() {
 		return mbid;
