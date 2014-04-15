@@ -40,7 +40,6 @@ public class AlbumDetailsAPI {
 
 		List<MusicbrainzAlbum> musicbrainzIds = new ArrayList<MusicbrainzAlbum>();
 		musicbrainzIds = getMusicbrainzIds(primaryAlbums);
-
 		List<Album> output = new ArrayList<Album>();
 		LastFMAlbumApi getLastFMInfo = new LastFMAlbumApi();
 		for (int i = 0; i < musicbrainzIds.size(); i++) {
@@ -88,7 +87,6 @@ public class AlbumDetailsAPI {
 			musicbrainzAlbum.setAlbum(primaryAlbumMidList.get(i).getAlbum());
 			musicbrainzAlbum.setArtist(primaryAlbumMidList.get(i).getArtist());
 			musicbrainzAlbum.setMid(primaryAlbumMidList.get(i).getMid());
-
 			GenericUrl url = new GenericUrl(
 					"https://www.googleapis.com/freebase/v1/topic"
 							+ primaryAlbumMidList.get(i).getMid());
@@ -119,6 +117,8 @@ public class AlbumDetailsAPI {
 			if (resultUrl != null) {
 				String[] result = resultUrl.split("group/");
 				musicbrainzAlbum.setMbid(result[1]);
+				System.out.println(musicbrainzAlbum.toString());
+				results.add(musicbrainzAlbum);
 			} else {
 				results.add(musicbrainzAlbum);
 			}

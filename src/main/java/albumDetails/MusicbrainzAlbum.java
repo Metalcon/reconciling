@@ -39,4 +39,10 @@ public class MusicbrainzAlbum {
 		this.album = album;
 	}
 
+	@Override
+	public String toString() {
+		return "MusicbrainzAlbum [mid=" + mid + ", mbid=" + mbid + ", artist="
+				+ artist + ", album=" + album + "]";
+	}
+
 }
