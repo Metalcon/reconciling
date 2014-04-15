@@ -85,7 +85,6 @@ public class LastFMAlbumApi {
 		GenericUrl url = createUrl();
 		url.put("mbid", mbid);
 		JSONObject response = makeHttpRequest(url);
-		System.out.println(response);
 		if (response.containsKey("error")) {
 			url = createUrl();
 			url.put("artist", artist);

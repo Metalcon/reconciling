@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Properties;
 
 import lastFMAlbum.Album;
+import lastFMAlbum.LastFMAlbumApi;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -28,29 +29,29 @@ public class AlbumDetailsAPI {
 
 	public static void main(String[] args) {
 		List<String> albums = new ArrayList<String>();
-		albums = getAlbumMids("/m/014_xj");
+		albums = getAlbumMids("/m/02gpxc");
 		List<String> primaryAlbums = new ArrayList<String>();
 		primaryAlbums = getPrimaryAlbums(albums);
 
 		List<String> musicbrainzIds = new ArrayList<String>();
 		musicbrainzIds = getMusicbrainzIds(primaryAlbums);
 
-		// List<Album> output = new ArrayList<Album>();
-		// LastFMAlbumApi getLastFMInfo = new LastFMAlbumApi();
-		// for (int i = 0; i < primaryAlbums.size(); i++) {
-		// Album tempAlbum = new Album();
-		// String temp = primaryAlbums.get(i);
-		// tempAlbum = getLastFMInfo.getTracksByMbid(temp);
-		// output.add(tempAlbum);
-		// }
+		List<Album> output = new ArrayList<Album>();
+		LastFMAlbumApi getLastFMInfo = new LastFMAlbumApi();
+		for (int i = 0; i < musicbrainzIds.size(); i++) {
+			Album tempAlbum = new Album();
+			String temp = musicbrainzIds.get(i);
+			tempAlbum = getLastFMInfo.getTracksByMbid(temp);
+			output.add(tempAlbum);
+		}
 
 		if (albums.equals(primaryAlbums)) {
 			System.out
 					.println("you've got the primary albums in the first request already. Try more albums to find out if this is always the case!");
 		}
-		// for (int i = 0; i < output.size(); i++) {
-		// System.out.println(output.get(i).toString());
-		// }
+		for (int i = 0; i < output.size(); i++) {
+			System.out.println(output.get(i).toString());
+		}
 	}
 
 	public List<Album> getAlbums(String bandMid) {
@@ -86,7 +87,6 @@ public class AlbumDetailsAPI {
 			url.put("key", properties.get("API_KEY"));
 			JSONObject response = makeHttpRequest(url);
 			JSONObject responseProperty = (JSONObject) response.get("property");
-			System.out.println(responseProperty);
 
 			// sometimes Freebase does not have any information to a mid
 			if (responseProperty == null) {
@@ -96,18 +96,17 @@ public class AlbumDetailsAPI {
 			JSONObject responsePropertyValues = (JSONObject) responseProperty
 					.get("/common/topic/topic_equivalent_webpage");
 			JSONArray pages = (JSONArray) responsePropertyValues.get("values");
-
-			String resultUrl = null;
+			List<String> returnStrings = new ArrayList<String>();
 			for (Object page : pages) {
 				GenericUrl pageUrl = new GenericUrl(JsonPath.read(page,
 						"$.value").toString());
 				if (pageUrl.toString().contains("http://musicbrainz.org")) {
+					String resutlUrl = pageUrl.toString().split("/", 3);
 					resultUrl = pageUrl.toString();
 					break;
 				}
 
 			}
-			System.out.println(resultUrl);
 		}
 
 		return null;
@@ -126,7 +125,6 @@ public class AlbumDetailsAPI {
 					+ "\", \"/music/album/primary_release\": null}]";
 			url.put("query", query);
 			url.put("key", properties.get("API_KEY"));
-			System.out.println(url);
 			JSONObject response = makeHttpRequest(url);
 			JSONArray responseResult = (JSONArray) response.get("result");
 			JSONObject responseResults = (JSONObject) responseResult.get(0);
@@ -174,7 +172,6 @@ public class AlbumDetailsAPI {
 				+ "\",\"/music/artist/album\":[{\"name\":null , \"mid\":null}]}]";
 		url.put("query", query);
 		url.put("key", properties.get("API_KEY"));
-		System.out.println(url);
 		JSONObject response = makeHttpRequest(url);
 		JSONArray responseResult = (JSONArray) response.get("result");
 		JSONObject responseResultEntry = (JSONObject) responseResult.get(0);
