@@ -119,10 +119,12 @@ public class AlbumDetailsAPI {
 			if (resultUrl != null) {
 				String[] result = resultUrl.split("group/");
 				musicbrainzAlbum.setMbid(result[1]);
+				results.add(musicbrainzAlbum);
 			} else {
 				results.add(musicbrainzAlbum);
 			}
 		}
+		System.out.println(results);
 		return results;
 	}
 
