@@ -77,6 +77,7 @@ public class AlbumDetailsAPI {
 
 	private static List<String> getMusicbrainzIds(
 			List<String> primaryAlbumMidList) {
+		List<String> results = new ArrayList<String>();
 		for (int i = 0; i < primaryAlbumMidList.size(); ++i) {
 			GenericUrl url = new GenericUrl(
 					"https://www.googleapis.com/freebase/v1/topic"
@@ -86,11 +87,9 @@ public class AlbumDetailsAPI {
 			url.put("key", properties.get("API_KEY"));
 			JSONObject response = makeHttpRequest(url);
 			JSONObject responseProperty = (JSONObject) response.get("property");
-			System.out.println(responseProperty);
 
 			// sometimes Freebase does not have any information to a mid
 			if (responseProperty == null) {
-
 				continue;
 			}
 			JSONObject responsePropertyValues = (JSONObject) responseProperty
@@ -107,10 +106,17 @@ public class AlbumDetailsAPI {
 				}
 
 			}
-			System.out.println(resultUrl);
+			if (resultUrl != null) {
+				System.out.println(resultUrl);
+				String[] result = resultUrl.split("group/");
+				System.out.println(result[1]);
+				results.add(result[1]);
+			} else {
+				results.add(null);
+			}
 		}
 
-		return null;
+		return results;
 	}
 
 	private static List<String> getPrimaryAlbums(List<String> albumMidList) {
@@ -126,7 +132,6 @@ public class AlbumDetailsAPI {
 					+ "\", \"/music/album/primary_release\": null}]";
 			url.put("query", query);
 			url.put("key", properties.get("API_KEY"));
-			System.out.println(url);
 			JSONObject response = makeHttpRequest(url);
 			JSONArray responseResult = (JSONArray) response.get("result");
 			JSONObject responseResults = (JSONObject) responseResult.get(0);
