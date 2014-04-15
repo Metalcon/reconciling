@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Properties;
 
 import lastFMAlbum.Album;
+import lastFMAlbum.LastFMAlbumApi;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -28,14 +29,23 @@ public class AlbumDetailsAPI {
 	public static void main(String[] args) {
 		List<String> albums = new ArrayList<String>();
 		albums = getAlbumMids("/m/014_xj");
-		System.out.println(albums);
 		List<String> primaryAlbums = new ArrayList<String>();
 		primaryAlbums = getPrimaryAlbums(albums);
-		System.out.println(primaryAlbums);
+		List<Album> output = new ArrayList<Album>();
+		LastFMAlbumApi getLastFMInfo = new LastFMAlbumApi();
+		for (int i = 0; i < primaryAlbums.size(); i++) {
+			Album tempAlbum = new Album();
+			String temp = primaryAlbums.get(i);
+			tempAlbum = getLastFMInfo.getTracksByMbid(temp);
+			output.add(tempAlbum);
+		}
 
 		if (albums.equals(primaryAlbums)) {
 			System.out
 					.println("you've got the primary albums in the first request already. Try more albums to find out if this is always the case!");
+		}
+		for (int i = 0; i < output.size(); i++) {
+			System.out.println(output.get(i).toString());
 		}
 	}
 
