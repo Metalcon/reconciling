@@ -122,7 +122,6 @@ public class AlbumDetailsAPI {
 				results.add(musicbrainzAlbum);
 			}
 		}
-		System.out.println(results);
 		return results;
 	}
 
