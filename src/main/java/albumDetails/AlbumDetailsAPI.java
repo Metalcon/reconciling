@@ -32,6 +32,9 @@ public class AlbumDetailsAPI {
 		List<String> primaryAlbums = new ArrayList<String>();
 		primaryAlbums = getPrimaryAlbums(albums);
 
+		List<String> musicbrainzIds = new ArrayList<String>();
+		musicbrainzIds = getMusicbrainzIds(primaryAlbums);
+
 		// List<Album> output = new ArrayList<Album>();
 		// LastFMAlbumApi getLastFMInfo = new LastFMAlbumApi();
 		// for (int i = 0; i < primaryAlbums.size(); i++) {
