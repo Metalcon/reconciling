@@ -32,6 +32,11 @@ public class AlbumDetailsAPI {
 		List<String> primaryAlbums = new ArrayList<String>();
 		primaryAlbums = getPrimaryAlbums(albums);
 
+		if (albums.equals(primaryAlbums)) {
+			System.out
+					.println("you've got the primary albums in the first request already. Try more albums to find out if this is always the case!");
+		}
+
 		List<String> musicbrainzIds = new ArrayList<String>();
 		musicbrainzIds = getMusicbrainzIds(primaryAlbums);
 
@@ -44,10 +49,6 @@ public class AlbumDetailsAPI {
 		// output.add(tempAlbum);
 		// }
 
-		if (albums.equals(primaryAlbums)) {
-			System.out
-					.println("you've got the primary albums in the first request already. Try more albums to find out if this is always the case!");
-		}
 		// for (int i = 0; i < output.size(); i++) {
 		// System.out.println(output.get(i).toString());
 		// }
@@ -107,15 +108,12 @@ public class AlbumDetailsAPI {
 
 			}
 			if (resultUrl != null) {
-				System.out.println(resultUrl);
 				String[] result = resultUrl.split("group/");
-				System.out.println(result[1]);
 				results.add(result[1]);
 			} else {
 				results.add(null);
 			}
 		}
-
 		return results;
 	}
 
