@@ -21,6 +21,7 @@ import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
+import com.jayway.jsonpath.JsonPath;
 
 public class AlbumDetailsAPI {
 
@@ -31,6 +32,10 @@ public class AlbumDetailsAPI {
 		albums = getAlbumMids("/m/014_xj");
 		List<String> primaryAlbums = new ArrayList<String>();
 		primaryAlbums = getPrimaryAlbums(albums);
+
+		List<String> musicbrainzIds = new ArrayList<String>();
+		musicbrainzIds = getMusicbrainzIds(primaryAlbums);
+
 		List<Album> output = new ArrayList<Album>();
 		LastFMAlbumApi getLastFMInfo = new LastFMAlbumApi();
 		for (int i = 0; i < primaryAlbums.size(); i++) {
@@ -56,11 +61,13 @@ public class AlbumDetailsAPI {
 		List<String> albumMidList = new ArrayList<String>();
 		albumMidList = getAlbumMids(bandMid);
 
-		// get primary-release-mids to alum-mids
+		// get primary-release-mids to album-mids
 		List<String> primaryAlbumMidList = new ArrayList<String>();
 		primaryAlbumMidList = getPrimaryAlbums(albumMidList);
 
-		// TODO:
+		// TODO: get Muiscbrainz-id
+		List<String> musicbrainzIds = new ArrayList<String>();
+		musicbrainzIds = getMusicbrainzIds(primaryAlbumMidList);
 
 		// TODO: get lastfm details to primary-release and store them as an
 		// Album List
@@ -69,13 +76,47 @@ public class AlbumDetailsAPI {
 		return albums;
 	}
 
+	private static List<String> getMusicbrainzIds(
+			List<String> primaryAlbumMidList) {
+		for (int i = 0; i < primaryAlbumMidList.size(); ++i) {
+			GenericUrl url = new GenericUrl(
+					"https://www.googleapis.com/freebase/v1/topic"
+							+ primaryAlbumMidList.get(i));
+			url.put("filter", "/common/topic/topic_equivalent_webpage");
+			url.put("limit", "9001");
+			url.put("key", properties.get("API_KEY"));
+			JSONObject response = makeHttpRequest(url);
+			JSONObject responseProperty = (JSONObject) response.get("property");
+			System.out.println(responseProperty);
+
+			// sometimes Freebase does not have any information to a mid
+			if (responseProperty == null) {
+
+				continue;
+			}
+			JSONObject responsePropertyValues = (JSONObject) responseProperty
+					.get("/common/topic/topic_equivalent_webpage");
+			JSONArray pages = (JSONArray) responsePropertyValues.get("values");
+
+			String resultUrl = null;
+			for (Object page : pages) {
+				GenericUrl pageUrl = new GenericUrl(JsonPath.read(page,
+						"$.value").toString());
+				if (pageUrl.toString().contains("http://musicbrainz.org")) {
+					resultUrl = pageUrl.toString();
+					break;
+				}
+
+			}
+			System.out.println(resultUrl);
+		}
+
+		return null;
+	}
+
 	private static List<String> getPrimaryAlbums(List<String> albumMidList) {
 		GenericUrl url = new GenericUrl(
 				"https://www.googleapis.com/freebase/v1/mqlread");
-
-		// requesting /common/topic/topic_equivalent_webpage via this JSON
-		// kind of request does always get a null response so we have to
-		// waste a second request to get the musicbrainz id.
 
 		List<String> returnList = new ArrayList<String>();
 
@@ -86,6 +127,7 @@ public class AlbumDetailsAPI {
 					+ "\", \"/music/album/primary_release\": null}]";
 			url.put("query", query);
 			url.put("key", properties.get("API_KEY"));
+			System.out.println(url);
 			JSONObject response = makeHttpRequest(url);
 			JSONArray responseResult = (JSONArray) response.get("result");
 			JSONObject responseResults = (JSONObject) responseResult.get(0);

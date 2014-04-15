@@ -196,7 +196,7 @@ public class LastFMAlbumApi {
 			properties.load(new FileInputStream("lastfm.properties"));
 		} catch (FileNotFoundException e) {
 			System.out
-					.println("you need a file freebase.properties. look in your git for freebase.properties.sample and rename it");
+					.println("you need a file lastfm.properties. Read the readme for more information!");
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
