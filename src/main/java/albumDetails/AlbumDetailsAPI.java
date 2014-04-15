@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import lastFMAlbum.Album;
+import lastFMAlbum.LastFMAlbumApi;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -38,20 +41,21 @@ public class AlbumDetailsAPI {
 		List<MusicbrainzAlbum> musicbrainzIds = new ArrayList<MusicbrainzAlbum>();
 		musicbrainzIds = getMusicbrainzIds(primaryAlbums);
 
-		// List<Album> output = new ArrayList<Album>();
-		// LastFMAlbumApi getLastFMInfo = new LastFMAlbumApi();
-		// for (int i = 0; i < musicbrainzIds.size(); i++) {
-		// Album tempAlbum = new Album();
-		// String temp = musicbrainzIds.get(i);
-		// tempAlbum = getLastFMInfo.getTracksByMbid(temp);
-		// output.add(tempAlbum);
-		// }
+		List<Album> output = new ArrayList<Album>();
+		LastFMAlbumApi getLastFMInfo = new LastFMAlbumApi();
+		for (int i = 0; i < musicbrainzIds.size(); i++) {
+			Album tempAlbum = new Album();
+			String tempMbid = musicbrainzIds.get(i).getMbid();
+			String tempAlbumName = musicbrainzIds.get(i).getAlbum();
+			String tempArtist = musicbrainzIds.get(i).getArtist();
+			tempAlbum = getLastFMInfo.getTracksByMuidOrName(tempMbid,
+					tempAlbumName, tempArtist);
+			output.add(tempAlbum);
+		}
 
-		// for (int i = 0; i < output.size(); i++) {
-		// if (!output.get(i).equals(null)) {
-		// System.out.println(output.get(i).toString());
-		// }
-		// }
+		for (int i = 0; i < output.size(); i++) {
+			System.out.println(output.get(i).toString());
+		}
 	}
 
 	public List<String> getAlbums(String bandMid) {
