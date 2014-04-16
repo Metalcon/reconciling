@@ -10,11 +10,9 @@ public class TestAlbumDetailsAPI {
 	public static void main(String[] args) {
 		List<Album> output = new ArrayList<Album>();
 		AlbumDetailsAPI testApi = new AlbumDetailsAPI();
-		output = testApi.getAlbums("/m/04473z");
+		output = testApi.getAlbums("/m/04rcr");
 		for (int i = 0; i < output.size(); i++) {
-			if (output.get(i).toString() != null
-					&& !output.get(i).toString().isEmpty())
-				System.out.println(output.get(i).toString());
+			System.out.println(output.get(i).toString());
 		}
 
 	}

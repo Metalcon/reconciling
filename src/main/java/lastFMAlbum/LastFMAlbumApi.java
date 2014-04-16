@@ -178,8 +178,11 @@ public class LastFMAlbumApi {
 			returnAlbum.setTracks(tempTrackList);
 			return returnAlbum;
 
+		} else {
+			Album failure = new Album();
+			return failure;
 		}
-		return null;
+
 	}
 
 	/**
