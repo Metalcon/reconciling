@@ -25,7 +25,7 @@ import com.jayway.jsonpath.JsonPath;
 
 /**
  * 
- * @author tobi
+ * @author tobi, Christian Schowalter
  * 
  */
 
