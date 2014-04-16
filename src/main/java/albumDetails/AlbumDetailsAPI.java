@@ -52,11 +52,28 @@ public class AlbumDetailsAPI {
 	public List<Album> getAlbums(String bandMid) {
 
 		List<MusicbrainzAlbum> albums = new ArrayList<MusicbrainzAlbum>();
+
+		long startTime = System.currentTimeMillis();
 		albums = getAlbumMids(bandMid);
+		long stoptimeTime = System.currentTimeMillis();
+		System.out.println("First request took: " + (stoptimeTime - startTime));
+
+		startTime = System.currentTimeMillis();
 		getPrimaryAlbums(albums);
+		stoptimeTime = System.currentTimeMillis();
+		System.out
+				.println("Second request took: " + (stoptimeTime - startTime));
+
+		startTime = System.currentTimeMillis();
 		getMusicbrainzIds(albums);
+		stoptimeTime = System.currentTimeMillis();
+		System.out.println("Third request took: " + (stoptimeTime - startTime));
+
 		List<Album> output = new ArrayList<Album>();
 		LastFMAlbumApi getLastFMInfo = new LastFMAlbumApi();
+
+		startTime = System.currentTimeMillis();
+
 		for (int i = 0; i < albums.size(); i++) {
 			Album tempAlbum = new Album();
 			String tempMbid = albums.get(i).getMbid();
@@ -66,6 +83,10 @@ public class AlbumDetailsAPI {
 					tempAlbumName, tempArtist);
 			output.add(tempAlbum);
 		}
+
+		stoptimeTime = System.currentTimeMillis();
+		System.out.println("Last request took: " + (stoptimeTime - startTime));
+
 		return output;
 	}
 
