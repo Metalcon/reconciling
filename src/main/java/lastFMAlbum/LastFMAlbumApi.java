@@ -125,25 +125,45 @@ public class LastFMAlbumApi {
 				}
 			}
 			String tempDate = responseAlbum.get("releasedate").toString();
-			DateFormat formatter = new SimpleDateFormat("dd MMM yyyy");
-			Date date = null;
-			try {
-				date = formatter.parse(tempDate);
-			} catch (java.text.ParseException e) {
-				e.printStackTrace();
+			if ((tempDate.contains("00:00"))) {
+				DateFormat formatter = new SimpleDateFormat("dd MMM yyyy");
+				Date date = null;
+				try {
+					date = formatter.parse(tempDate);
+				} catch (java.text.ParseException e) {
+					e.printStackTrace();
+				}
+				returnAlbum.setReleaseDate(date);
 			}
-			returnAlbum.setReleaseDate(date);
 			List<Track> tempTrackList = new ArrayList<Track>();
-			JSONObject responseAlbumTracks = (JSONObject) responseAlbum
-					.get("tracks");
-			Object typeTest = responseAlbumTracks.get("track");
-			if (typeTest instanceof JSONArray) {
-				JSONArray responseAlbumTracksTrack = (JSONArray) responseAlbumTracks
-						.get("track");
-				for (int i = 0; i < responseAlbumTracksTrack.size(); i++) {
+			Object tracksTypeTest = responseAlbum.get("tracks");
+			if (!(tracksTypeTest instanceof String)) {
+				JSONObject responseAlbumTracks = (JSONObject) responseAlbum
+						.get("tracks");
+				Object trackTypeTest = responseAlbumTracks.get("track");
+				if (trackTypeTest instanceof JSONArray) {
+					JSONArray responseAlbumTracksTrack = (JSONArray) responseAlbumTracks
+							.get("track");
+					for (int i = 0; i < responseAlbumTracksTrack.size(); i++) {
+						Track tempTrack = new Track();
+						JSONObject track = (JSONObject) responseAlbumTracksTrack
+								.get(i);
+						tempTrack.setName(track.get("name").toString());
+						tempTrack.setMbid(track.get("mbid").toString());
+						JSONObject trackAttr = (JSONObject) track.get("@attr");
+						tempTrack.setRank(Integer.parseInt(trackAttr
+								.get("rank").toString()));
+						if (!track.get("duration").equals(""))
+							tempTrack.setDuration(Integer.parseInt(track.get(
+									"duration").toString()));
+						tempTrackList.add(tempTrack);
+					}
+					returnAlbum.setTracks(tempTrackList);
+					return returnAlbum;
+				} else {
+					JSONObject track = (JSONObject) responseAlbumTracks
+							.get("track");
 					Track tempTrack = new Track();
-					JSONObject track = (JSONObject) responseAlbumTracksTrack
-							.get(i);
 					tempTrack.setName(track.get("name").toString());
 					tempTrack.setMbid(track.get("mbid").toString());
 					JSONObject trackAttr = (JSONObject) track.get("@attr");
@@ -154,21 +174,6 @@ public class LastFMAlbumApi {
 								"duration").toString()));
 					tempTrackList.add(tempTrack);
 				}
-				returnAlbum.setTracks(tempTrackList);
-				return returnAlbum;
-			} else {
-				JSONObject track = (JSONObject) responseAlbumTracks
-						.get("track");
-				Track tempTrack = new Track();
-				tempTrack.setName(track.get("name").toString());
-				tempTrack.setMbid(track.get("mbid").toString());
-				JSONObject trackAttr = (JSONObject) track.get("@attr");
-				tempTrack.setRank(Integer.parseInt(trackAttr.get("rank")
-						.toString()));
-				if (!track.get("duration").equals(""))
-					tempTrack.setDuration(Integer.parseInt(track
-							.get("duration").toString()));
-				tempTrackList.add(tempTrack);
 			}
 			returnAlbum.setTracks(tempTrackList);
 			return returnAlbum;

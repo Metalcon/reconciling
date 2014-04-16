@@ -23,73 +23,65 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.jayway.jsonpath.JsonPath;
 
+/**
+ * 
+ * @author tobi
+ * 
+ */
+
 public class AlbumDetailsAPI {
 
-	public static Properties properties = new Properties();
+	public Properties properties = new Properties();
 
-	public static void main(String[] args) {
+	/**
+	 * 
+	 * @param bandMid
+	 *            The required unique freebase mid for a band you want to search
+	 *            for all songs
+	 * @return Returns a List<Album> containing all albums with all tracks
+	 * 
+	 *         This method requires a freebase mid for a band and looks through
+	 *         the lastFM API for songs. For that it first asks freebase for
+	 *         mids for all the albums, then goes through the list and requests
+	 *         all primary releases, and saves the new mids. When it has mids
+	 *         for all albums it extracts the equivalent musicbrainz ids. And
+	 *         with that it can make a request to the lastFM Api. If this fails
+	 *         and returns no result it sends a second request to lastFM, this
+	 *         time with the name of the band and the name of the album.
+	 */
+	public List<Album> getAlbums(String bandMid) {
+
 		List<MusicbrainzAlbum> albums = new ArrayList<MusicbrainzAlbum>();
-		albums = getAlbumMids("/m/03y2lh");
-		List<MusicbrainzAlbum> primaryAlbums = new ArrayList<MusicbrainzAlbum>();
-		primaryAlbums = getPrimaryAlbums(albums);
-
-		if (albums.equals(primaryAlbums)) {
-			System.out
-					.println("you've got the primary albums in the first request already. Try more albums to find out if this is always the case!");
-		}
-
-		List<MusicbrainzAlbum> musicbrainzIds = new ArrayList<MusicbrainzAlbum>();
-		musicbrainzIds = getMusicbrainzIds(primaryAlbums);
+		albums = getAlbumMids(bandMid);
+		getPrimaryAlbums(albums);
+		getMusicbrainzIds(albums);
 		List<Album> output = new ArrayList<Album>();
 		LastFMAlbumApi getLastFMInfo = new LastFMAlbumApi();
-		for (int i = 0; i < musicbrainzIds.size(); i++) {
+		for (int i = 0; i < albums.size(); i++) {
 			Album tempAlbum = new Album();
-			String tempMbid = musicbrainzIds.get(i).getMbid();
-			String tempAlbumName = musicbrainzIds.get(i).getAlbum();
-			String tempArtist = musicbrainzIds.get(i).getArtist();
+			String tempMbid = albums.get(i).getMbid();
+			String tempAlbumName = albums.get(i).getAlbum();
+			String tempArtist = albums.get(i).getArtist();
 			tempAlbum = getLastFMInfo.getTracksByMuidOrName(tempMbid,
 					tempAlbumName, tempArtist);
 			output.add(tempAlbum);
 		}
-
-		for (int i = 0; i < output.size(); i++) {
-			System.out.println(output.get(i).toString());
-		}
+		return output;
 	}
 
-	public List<String> getAlbums(String bandMid) {
-
-		// get album-mids via band-mids
-		List<String> result = new ArrayList<String>();
-		List<MusicbrainzAlbum> albumList = new ArrayList<MusicbrainzAlbum>();
-		albumList = getAlbumMids(bandMid);
-
-		// get primary-release-mids to album-mids
-		List<MusicbrainzAlbum> primaryAlbumMidList = new ArrayList<MusicbrainzAlbum>();
-		primaryAlbumMidList = getPrimaryAlbums(albumList);
-
-		// TODO: get Muiscbrainz-id
-		List<MusicbrainzAlbum> musicbrainzIds = new ArrayList<MusicbrainzAlbum>();
-		musicbrainzIds = getMusicbrainzIds(primaryAlbumMidList);
-
-		// TODO: get lastfm details to primary-release and store them as an
-		// Album List
-
-		// TODO: return Album List.
-		return result;
-	}
-
-	private static List<MusicbrainzAlbum> getMusicbrainzIds(
-			List<MusicbrainzAlbum> primaryAlbumMidList) {
-		List<MusicbrainzAlbum> results = new ArrayList<MusicbrainzAlbum>();
-		for (int i = 0; i < primaryAlbumMidList.size(); ++i) {
-			MusicbrainzAlbum musicbrainzAlbum = new MusicbrainzAlbum();
-			musicbrainzAlbum.setAlbum(primaryAlbumMidList.get(i).getAlbum());
-			musicbrainzAlbum.setArtist(primaryAlbumMidList.get(i).getArtist());
-			musicbrainzAlbum.setMid(primaryAlbumMidList.get(i).getMid());
+	/**
+	 * 
+	 * @param primaryAlbumMidList
+	 * 
+	 *            This internal method fills the last field of the
+	 *            MusicbrainzAlbum objects and extracts the musicbrainz ids for
+	 *            all albums
+	 */
+	private void getMusicbrainzIds(List<MusicbrainzAlbum> primaryAlbumMidList) {
+		for (MusicbrainzAlbum iterator : primaryAlbumMidList) {
 			GenericUrl url = new GenericUrl(
 					"https://www.googleapis.com/freebase/v1/topic"
-							+ primaryAlbumMidList.get(i).getMid());
+							+ iterator.getMid());
 			url.put("filter", "/common/topic/topic_equivalent_webpage");
 			url.put("limit", "9001");
 			url.put("key", properties.get("API_KEY"));
@@ -112,29 +104,27 @@ public class AlbumDetailsAPI {
 					resultUrl = pageUrl.toString();
 					break;
 				}
-
 			}
 			if (resultUrl != null) {
 				String[] result = resultUrl.split("group/");
-				musicbrainzAlbum.setMbid(result[1]);
-				results.add(musicbrainzAlbum);
-			} else {
-				results.add(musicbrainzAlbum);
+				iterator.setMbid(result[1]);
 			}
 		}
-		return results;
 	}
 
-	private static List<MusicbrainzAlbum> getPrimaryAlbums(
-			List<MusicbrainzAlbum> albumList) {
+	/**
+	 * 
+	 * @param albumList
+	 *            This internal method changes the mids to the albums to the
+	 *            ones of the primary releases.
+	 */
+
+	private void getPrimaryAlbums(List<MusicbrainzAlbum> albumList) {
 		GenericUrl url = new GenericUrl(
 				"https://www.googleapis.com/freebase/v1/mqlread");
-
-		List<MusicbrainzAlbum> returnList = new ArrayList<MusicbrainzAlbum>();
-
 		String albumMid = null;
-		for (int i = 0; i < albumList.size(); ++i) {
-			albumMid = albumList.get(i).getMid();
+		for (MusicbrainzAlbum iterator : albumList) {
+			albumMid = iterator.getMid();
 			String query = "[{\"mid\": \"" + albumMid
 					+ "\", \"/music/album/primary_release\": null}]";
 			url.put("query", query);
@@ -142,19 +132,20 @@ public class AlbumDetailsAPI {
 			JSONObject response = makeHttpRequest(url);
 			JSONArray responseResult = (JSONArray) response.get("result");
 			JSONObject responseResults = (JSONObject) responseResult.get(0);
-			String primaryReleaseMid = responseResults.get("mid").toString();
-
-			MusicbrainzAlbum musicbrainzAlbum = new MusicbrainzAlbum();
-			musicbrainzAlbum.setMid(responseResults.get("mid").toString());
-			musicbrainzAlbum.setArtist(albumList.get(i).getArtist());
-			musicbrainzAlbum.setAlbum(albumList.get(i).getAlbum());
-			returnList.add(musicbrainzAlbum);
-
+			iterator.setMid(responseResults.get("mid").toString());
 		}
-		return returnList;
 	}
 
-	private static JSONObject makeHttpRequest(GenericUrl url) {
+	/**
+	 * 
+	 * @param url
+	 * @return
+	 * 
+	 *         Internal helper method for making http requests. It receives a
+	 *         Url and makes a http request with it. Afterwards it parses the
+	 *         result and returns the result json.
+	 */
+	private JSONObject makeHttpRequest(GenericUrl url) {
 		HttpTransport httpTransport = new NetHttpTransport();
 		HttpRequestFactory requestFactory = httpTransport
 				.createRequestFactory();
@@ -174,7 +165,16 @@ public class AlbumDetailsAPI {
 		}
 	}
 
-	public static List<MusicbrainzAlbum> getAlbumMids(String bandMid) {
+	/**
+	 * 
+	 * @param bandMid
+	 * @return
+	 * 
+	 *         This internal method gets as input the unique freebase mid and
+	 *         makes a request to receive all of the bands' albums
+	 * 
+	 */
+	private List<MusicbrainzAlbum> getAlbumMids(String bandMid) {
 		try {
 			properties.load(new FileInputStream("freebase.properties"));
 		} catch (FileNotFoundException e) {
